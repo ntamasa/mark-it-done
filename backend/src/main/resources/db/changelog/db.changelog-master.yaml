@@ -1,0 +1,5 @@
+databaseChangeLog:
+  logicalFilePath: db/changelog/db.changelog-master.yaml
+  changesets:
+    # Changesets will be added here in order
+    # Never edit a changeset that has been merged; add a new one
