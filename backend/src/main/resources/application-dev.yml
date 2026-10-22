@@ -1,0 +1,7 @@
+logging:
+  level:
+    com.ntamasa.markitdone: DEBUG
+
+markitdone:
+  cookies:
+    secure: false

@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: markitdone
+  datasource:
+    url: "${MARKITDONE_DB_URL:jdbc:postgresql://localhost:5432/markitdone}"
+    username: "${POSTGRES_USER:markitdone}"
+    password: "${POSTGRES_PASSWORD:markitdone}"
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  mail:
+    host: "${MARKITDONE_MAIL_HOST:localhost}"
+    port: "${MARKITDONE_MAIL_PORT:1025}"
+  docker:
+    compose:
+      enabled: false
+
+server:
+  port: 8080
+  error:
+    whitelabel:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    probes:
+      enabled: true
+
+markitdone:
+  app-base-url: "${MARKITDONE_APP_BASE_URL:http://localhost:4200}"
+  mail-from: "${MARKITDONE_MAIL_FROM:no-reply@markitdone.local}"
+  jwt:
+    secret: "${MARKITDONE_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}"
+    access-ttl: "PT15M"
+    refresh-ttl: "P14D"
+  cookies:
+    secure: "${MARKITDONE_COOKIES_SECURE:true}"
+  recurrence:
+    horizon-months: 3
