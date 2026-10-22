@@ -1,6 +1,25 @@
-# Tessera
+# markitDONE
 
-## Planning workflow (Claude Code skills)
+Personal todo planner with recurring todos.
+
+## Stack
+
+| Folder | Stack |
+|---|---|
+| `backend/` | Java 25, Spring Boot 4.1.1, Gradle 9.8.2, PostgreSQL 18 |
+| `frontend/` | Angular 22.2, PrimeNG 22.1, TypeScript |
+| `e2e/` | Playwright |
+| `docker/` | Docker, docker-compose, nginx |
+
+## Local development
+
+*To be filled in by a future ticket.*
+
+## Design system
+
+The source of truth for UI work is [`docs/design-system/MASTER.md`](docs/design-system/MASTER.md). It contains the design plan, component specifications, and page definitions.
+
+## Planning workflow (Tessera)
 
 A feature goes from a short description file to Jira tickets through four Claude Code skills. For the details of a skill, read its `SKILL.md` in `~/.claude/skills/<skill>/`.
 
