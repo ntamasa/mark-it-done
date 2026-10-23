@@ -56,3 +56,24 @@ tasks.register('blackboxTest', Test) {
 	classpath = sourceSets.test.runtimeClasspath
 	include 'com/ntamasa/markitdone/blackbox/**'
 }
+
+spotless {
+	java {
+		googleJavaFormat('1.36.0')
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+		targetExclude('src/test/java/com/ntamasa/markitdone/blackbox/**')
+	}
+
+	groovy {
+		target('**/*.gradle')
+		greclipse()
+	}
+
+	yaml {
+		target('src/**/*.yaml', 'src/**/*.yml')
+		jackson()
+		endWithNewline()
+	}
+}
