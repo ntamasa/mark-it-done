@@ -15,6 +15,20 @@ Personal todo planner with recurring todos.
 
 *To be filled in by a future ticket.*
 
+## Formatting
+
+Code formatting is enforced using Spotless. To format all Java, Gradle, and YAML files in the backend:
+
+```bash
+cd backend && ./gradlew spotlessApply
+```
+
+To check if code matches the formatting rules without applying changes:
+
+```bash
+cd backend && ./gradlew spotlessCheck
+```
+
 ## Design system
 
 The source of truth for UI work is [`docs/design-system/MASTER.md`](docs/design-system/MASTER.md). It contains the design plan, component specifications, and page definitions.

@@ -1,6 +1,7 @@
+---
 spring:
   application:
-    name: markitdone
+    name: "markitdone"
   datasource:
     url: "${MARKITDONE_DB_URL:jdbc:postgresql://localhost:5432/markitdone}"
     username: "${POSTGRES_USER:markitdone}"
@@ -8,13 +9,13 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: "validate"
     properties:
       hibernate:
         jdbc:
-          time_zone: UTC
+          time_zone: "UTC"
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: "classpath:db/changelog/db.changelog-master.yaml"
   mail:
     host: "${MARKITDONE_MAIL_HOST:localhost}"
     port: "${MARKITDONE_MAIL_PORT:1025}"
@@ -24,22 +25,19 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-
 server:
   port: 8080
   error:
     whitelabel:
       enabled: false
-
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: "health,info"
   health:
     probes:
       enabled: true
-
 markitdone:
   app-base-url: "${MARKITDONE_APP_BASE_URL:http://localhost:4200}"
   mail-from: "${MARKITDONE_MAIL_FROM:no-reply@markitdone.local}"

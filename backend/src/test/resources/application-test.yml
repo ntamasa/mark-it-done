@@ -1,11 +1,11 @@
+---
 markitdone:
   cookies:
     secure: false
   jwt:
     secret: "test-secret-key-must-be-at-least-32-bytes-long-123456"
   mail-from: "test@localhost"
-
 spring:
   mail:
-    host: localhost
+    host: "localhost"
     port: 3025
