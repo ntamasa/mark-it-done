@@ -1,0 +1,104 @@
+// Typography - MASTER §6
+
+// ============================================================================
+// Type scale (mobile-first, desktop overrides at ≥1024px)
+// ============================================================================
+
+.t-display {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+
+  @media (min-width: 1024px) {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+.t-title {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+
+  @media (min-width: 1024px) {
+    font-size: 20px;
+    line-height: 28px;
+  }
+}
+
+.t-subtitle {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.t-body {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.t-body-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+.t-label {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.t-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--color-muted-foreground);
+}
+
+// ============================================================================
+// Focus ring styling
+// ============================================================================
+
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+// ============================================================================
+// Screen reader only text
+// ============================================================================
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ============================================================================
+// Accent button styling for PrimeNG buttons
+// ============================================================================
+
+.btn-accent {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  color: var(--color-on-accent) !important;
+
+  &:hover {
+    background-color: var(--color-accent) !important;
+    opacity: 0.9;
+  }
+
+  &:active {
+    background-color: var(--color-accent) !important;
+    opacity: 0.8;
+  }
+}

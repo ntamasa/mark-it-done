@@ -1,0 +1,19 @@
+// Mesh backdrop gradient - MASTER §3
+
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 30rem at 10% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%),
+    radial-gradient(36rem 28rem at 95% 20%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 70%),
+    radial-gradient(44rem 34rem at 50% 110%, color-mix(in srgb, var(--color-secondary) 14%, transparent), transparent 70%),
+    var(--color-background);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app-backdrop {
+    background: var(--color-background);
+  }
+}
