@@ -1,2 +1,8 @@
 @import '@fontsource-variable/plus-jakarta-sans';
 @import 'primeicons/primeicons.css';
+
+// Design system tokens and styles (loaded in order)
+@import 'styles/tokens';
+@import 'styles/backdrop';
+@import 'styles/glass';
+@import 'styles/typography';
