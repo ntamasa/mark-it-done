@@ -63,7 +63,8 @@
               "buildTarget": "markitdone-web:build:production"
             },
             "development": {
-              "buildTarget": "markitdone-web:build:development"
+              "buildTarget": "markitdone-web:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
