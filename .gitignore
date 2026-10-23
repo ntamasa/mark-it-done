@@ -20,3 +20,6 @@ playwright-report/
 
 # Environment
 .env
+
+# Planning input (local only)
+feature-description.md
