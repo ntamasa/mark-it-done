@@ -21,6 +21,9 @@ spring:
   docker:
     compose:
       enabled: false
+  mvc:
+    problemdetails:
+      enabled: true
 
 server:
   port: 8080
