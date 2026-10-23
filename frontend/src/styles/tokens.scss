@@ -6,27 +6,27 @@
 
 :root {
   // Colour tokens
-  --color-primary: #0D9488;
-  --color-primary-strong: #0F766E;
+  --color-primary: #0d9488;
+  --color-primary-strong: #0f766e;
   --color-on-primary: #000000;
-  --color-secondary: #14B8A6;
-  --color-on-secondary: #0F172A;
-  --color-accent: #EA580C;
+  --color-secondary: #14b8a6;
+  --color-on-secondary: #0f172a;
+  --color-accent: #ea580c;
   --color-on-accent: #000000;
-  --color-background: #F0FDFA;
-  --color-foreground: #134E4A;
-  --color-card: #FFFFFF;
-  --color-card-foreground: #134E4A;
-  --color-muted: #E8F1F4;
+  --color-background: #f0fdfa;
+  --color-foreground: #134e4a;
+  --color-card: #ffffff;
+  --color-card-foreground: #134e4a;
+  --color-muted: #e8f1f4;
   --color-muted-foreground: #475569;
-  --color-border: #99F6E4;
+  --color-border: #99f6e4;
   --color-border-subtle: rgba(19, 78, 74, 0.12);
-  --color-destructive: #DC2626;
-  --color-on-destructive: #FFFFFF;
-  --color-ring: #0D9488;
+  --color-destructive: #dc2626;
+  --color-on-destructive: #ffffff;
+  --color-ring: #0d9488;
   --glass-fill: rgba(255, 255, 255, 0.62);
   --glass-border: rgba(255, 255, 255, 0.55);
-  --glass-fallback: #FFFFFF;
+  --glass-fallback: #ffffff;
   --scrim: rgba(4, 47, 46, 0.32);
 
   // Radius tokens
@@ -39,7 +39,7 @@
   --shadow-sm: 0 1px 2px rgba(4, 47, 46, 0.06);
   --shadow-md: 0 4px 12px rgba(4, 47, 46, 0.08);
   --shadow-lg: 0 12px 32px rgba(4, 47, 46, 0.12);
-  --shadow-glass: 0 8px 32px rgba(4, 47, 46, 0.10);
+  --shadow-glass: 0 8px 32px rgba(4, 47, 46, 0.1);
 
   // Spacing tokens
   --space-xs: 4px;
@@ -67,27 +67,27 @@
 
 :root.app-dark {
   // Colour tokens
-  --color-primary: #2DD4BF;
-  --color-primary-strong: #2DD4BF;
-  --color-on-primary: #0B1414;
-  --color-secondary: #5EEAD4;
-  --color-on-secondary: #0B1414;
-  --color-accent: #FB923C;
-  --color-on-accent: #0B1414;
-  --color-background: #0B1414;
-  --color-foreground: #E6FFFA;
-  --color-card: #10201F;
-  --color-card-foreground: #E6FFFA;
-  --color-muted: #16302E;
-  --color-muted-foreground: #94A3B8;
+  --color-primary: #2dd4bf;
+  --color-primary-strong: #2dd4bf;
+  --color-on-primary: #0b1414;
+  --color-secondary: #5eead4;
+  --color-on-secondary: #0b1414;
+  --color-accent: #fb923c;
+  --color-on-accent: #0b1414;
+  --color-background: #0b1414;
+  --color-foreground: #e6fffa;
+  --color-card: #10201f;
+  --color-card-foreground: #e6fffa;
+  --color-muted: #16302e;
+  --color-muted-foreground: #94a3b8;
   --color-border: rgba(153, 246, 228, 0.32);
   --color-border-subtle: rgba(153, 246, 228, 0.16);
-  --color-destructive: #F87171;
-  --color-on-destructive: #0B1414;
-  --color-ring: #2DD4BF;
+  --color-destructive: #f87171;
+  --color-on-destructive: #0b1414;
+  --color-ring: #2dd4bf;
   --glass-fill: rgba(16, 32, 31, 0.58);
   --glass-border: rgba(153, 246, 228, 0.14);
-  --glass-fallback: #10201F;
+  --glass-fallback: #10201f;
   --scrim: rgba(0, 0, 0, 0.55);
 
   // Radius tokens (same in both themes)
