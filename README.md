@@ -11,9 +11,57 @@ Personal todo planner with recurring todos.
 | `e2e/` | Playwright |
 | `docker/` | Docker, docker-compose, nginx |
 
-## Local development
+## Run locally
 
-*To be filled in by a future ticket.*
+### Infrastructure only
+
+For local development, you can start just the database and mail services, then run the backend and frontend in your IDE.
+
+First, set up the required JWT secret:
+```bash
+export MARKITDONE_JWT_SECRET=your-secret-here
+```
+
+Or add it to a `.env` file in the repo root (it will be used by `docker compose`).
+
+Then start the infrastructure:
+```bash
+docker compose up -d
+```
+
+In a new terminal, start the backend with the `dev` profile:
+```bash
+cd backend
+./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+In another terminal, start the frontend dev server (the app will be available at `http://localhost:4200`). Ensure you have Node 24 installed (see `frontend/.nvmrc`):
+```bash
+cd frontend
+npm ci
+npx ng serve
+```
+
+You can access Mailpit (the mail UI) at `http://localhost:8025`.
+
+### Full stack in Docker
+
+To run the entire stack with all services in Docker, you must first set up the required JWT secret:
+```bash
+export MARKITDONE_JWT_SECRET=your-secret-here
+```
+
+Or add it to a `.env` file in the repo root.
+
+Then start all services:
+```bash
+docker compose --profile app up -d --build
+```
+
+The app will be available at `http://localhost:8081`. Stop the services with:
+```bash
+docker compose --profile app down
+```
 
 ## Formatting
 
