@@ -1,0 +1,16 @@
+node_modules
+dist
+.angular
+backend/build
+backend/.gradle
+e2e/node_modules
+.git
+.gitignore
+README.md
+*.md
+.github
+.env.local
+.env
+frontend/node_modules
+frontend/dist
+frontend/.angular
