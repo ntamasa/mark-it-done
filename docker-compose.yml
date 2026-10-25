@@ -1,0 +1,28 @@
+name: markitdone
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-markitdone}
+      POSTGRES_USER: ${POSTGRES_USER:-markitdone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-markitdone}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-markitdone}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mail:
+    image: axllent/mailpit:v1.31
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  db-data:
+
