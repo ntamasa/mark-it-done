@@ -23,6 +23,48 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  backend:
+    build: ./backend/
+    depends_on:
+      db:
+        condition: service_healthy
+      mail:
+        condition: service_started
+    expose:
+      - "8080"
+    volumes:
+      - backend-logs:/app/logs
+    environment:
+      MARKITDONE_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-markitdone}
+      POSTGRES_USER: ${POSTGRES_USER:-markitdone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-markitdone}
+      MARKITDONE_JWT_SECRET: ${MARKITDONE_JWT_SECRET?error "MARKITDONE_JWT_SECRET is required in .env or as an environment variable"}
+      MARKITDONE_MAIL_HOST: mail
+      MARKITDONE_MAIL_PORT: "1025"
+      MARKITDONE_APP_BASE_URL: http://localhost:8081
+      MARKITDONE_COOKIES_SECURE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /actuator/health/readiness HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3 && grep -q UP <&3'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    profiles:
+      - app
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    profiles:
+      - app
+
 volumes:
   db-data:
+  backend-logs:
 
