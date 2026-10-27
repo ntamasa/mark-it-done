@@ -1,6 +1,5 @@
 package com.ntamasa.markitdone.audit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ntamasa.markitdone.logging.RequestIdFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Service for recording audit log entries.
