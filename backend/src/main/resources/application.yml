@@ -45,6 +45,9 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: "logs/markitdone.json"
+  structured:
+    format:
+      file: "ecs"
   logback:
     rollingpolicy:
       max-file-size: "20MB"
