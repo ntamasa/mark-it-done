@@ -1,0 +1,56 @@
+---
+databaseChangeLog:
+- changeSet:
+    id: "001-audit-log"
+    author: "markitdone"
+    changes:
+    - createTable:
+        tableName: "audit_log"
+        columns:
+        - column:
+            name: "id"
+            type: "uuid"
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: "occurred_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+        - column:
+            name: "user_id"
+            type: "uuid"
+            constraints:
+              nullable: true
+        - column:
+            name: "action"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+        - column:
+            name: "entity_type"
+            type: "varchar(64)"
+        - column:
+            name: "entity_id"
+            type: "varchar(64)"
+        - column:
+            name: "request_id"
+            type: "varchar(64)"
+        - column:
+            name: "ip_address"
+            type: "varchar(45)"
+        - column:
+            name: "before_state"
+            type: "jsonb"
+        - column:
+            name: "after_state"
+            type: "jsonb"
+    - createIndex:
+        tableName: "audit_log"
+        indexName: "ix_audit_log_user_occurred"
+        columns:
+        - column:
+            name: "user_id"
+        - column:
+            name: "occurred_at"

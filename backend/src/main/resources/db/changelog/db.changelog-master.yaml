@@ -1,2 +1,4 @@
 ---
-databaseChangeLog: []
+databaseChangeLog:
+- include:
+    file: "changes/001-audit-log.yaml"

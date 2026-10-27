@@ -1,0 +1,31 @@
+package com.ntamasa.markitdone.audit;
+
+/** Enumeration of audit trail action types. */
+public enum AuditAction {
+  USER_REGISTERED,
+  LOGIN_SUCCEEDED,
+  LOGIN_FAILED,
+  LOGOUT,
+  TOKEN_REFRESHED,
+  REFRESH_TOKEN_REUSE_DETECTED,
+  PASSWORD_RESET_REQUESTED,
+  PASSWORD_RESET_COMPLETED,
+  USER_PREFERENCES_UPDATED,
+  CATEGORY_CREATED,
+  CATEGORY_UPDATED,
+  CATEGORY_DELETED,
+  TODO_CREATED,
+  TODO_UPDATED,
+  TODO_DONE_CHANGED,
+  TODO_DELETED,
+  SERIES_CREATED,
+  SERIES_UPDATED,
+  SERIES_CANCELLED,
+  SERIES_MATERIALIZED,
+  OCCURRENCE_DELETED;
+
+  @Override
+  public String toString() {
+    return this.name();
+  }
+}
