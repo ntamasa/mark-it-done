@@ -1,0 +1,56 @@
+---
+databaseChangeLog:
+- changeSet:
+    id: "002-users"
+    author: "markitdone"
+    changes:
+    - createTable:
+        tableName: "users"
+        columns:
+        - column:
+            name: "id"
+            type: "uuid"
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: "email"
+            type: "varchar(254)"
+            constraints:
+              nullable: false
+        - column:
+            name: "display_name"
+            type: "varchar(80)"
+            constraints:
+              nullable: false
+        - column:
+            name: "password_hash"
+            type: "varchar(255)"
+            constraints:
+              nullable: false
+        - column:
+            name: "timezone"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+            defaultValue: "UTC"
+        - column:
+            name: "theme_preference"
+            type: "varchar(10)"
+            constraints:
+              nullable: false
+            defaultValue: "SYSTEM"
+        - column:
+            name: "created_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+        - column:
+            name: "updated_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+    - addUniqueConstraint:
+        tableName: "users"
+        columnNames: "email"
+        constraintName: "uq_users_email"
