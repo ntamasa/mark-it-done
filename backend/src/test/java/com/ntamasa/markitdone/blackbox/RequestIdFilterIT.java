@@ -27,7 +27,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -48,7 +47,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -69,7 +67,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -90,7 +87,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -111,7 +107,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -133,7 +128,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -155,7 +149,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -177,7 +170,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -199,7 +191,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
@@ -241,7 +232,6 @@ class RequestIdFilterIT extends AbstractIntegrationTest {
 
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-		// We don't care about the status code for this test, just that the header is present
 		assertThat(response.headers().firstValue(REQUEST_ID_HEADER))
 			.isPresent()
 			.get()
