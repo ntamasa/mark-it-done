@@ -38,6 +38,18 @@ management:
   health:
     probes:
       enabled: true
+logging:
+  level:
+    root: "INFO"
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: "logs/markitdone.json"
+  logback:
+    rollingpolicy:
+      max-file-size: "20MB"
+      max-history: 14
+      total-size-cap: "280MB"
 markitdone:
   app-base-url: "${MARKITDONE_APP_BASE_URL:http://localhost:4200}"
   mail-from: "${MARKITDONE_MAIL_FROM:no-reply@markitdone.local}"
