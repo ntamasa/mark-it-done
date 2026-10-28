@@ -145,7 +145,7 @@ class SecurityConfigIT extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Garbage md_access cookie on POST /api/auth/login is ignored (not 401 or 403)")
+	@DisplayName("Garbage md_access cookie on POST /api/auth/login is ignored (401 INVALID_CREDENTIALS, not UNAUTHORIZED or FORBIDDEN)")
 	void loginIgnoresGarbageAccessCookie() throws Exception {
 		String token = fetchCsrfToken();
 
@@ -154,9 +154,16 @@ class SecurityConfigIT extends AbstractIntegrationTest {
 				"Cookie", ACCESS_COOKIE + "=" + GARBAGE_TOKEN + "; " + CSRF_COOKIE + "=" + token,
 				CSRF_HEADER, token);
 
+		// Login exists now, so an unknown account must fail with INVALID_CREDENTIALS.
+		// Getting that instead of UNAUTHORIZED proves the garbage access cookie was ignored.
 		assertThat(response.statusCode())
 				.as("public auth endpoint must ignore the access cookie")
-				.isNotIn(401, 403);
+				.isEqualTo(401);
+		assertThat(response.headers().firstValue("Content-Type").orElse(""))
+				.startsWith("application/problem+json");
+		JsonNode body = JSON.readTree(response.body());
+		assertThat(body.path("code").asString()).isEqualTo("INVALID_CREDENTIALS");
+		assertThat(response.body()).contains("Email or password is incorrect.");
 	}
 
 	// ---------------------------------------------------------------- helpers
