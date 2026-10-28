@@ -7,6 +7,7 @@ import com.ntamasa.markitdone.user.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +23,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+  private static final String FORGOT_MESSAGE =
+      "If an account exists for this email, a reset link has been sent.";
+
   private final AuthService authService;
   private final SessionIssuer sessionIssuer;
   private final RefreshTokenService refreshTokenService;
   private final UserService userService;
+  private final PasswordResetService passwordResetService;
 
   public AuthController(
       AuthService authService,
       SessionIssuer sessionIssuer,
       RefreshTokenService refreshTokenService,
-      UserService userService) {
+      UserService userService,
+      PasswordResetService passwordResetService) {
     this.authService = authService;
     this.sessionIssuer = sessionIssuer;
     this.refreshTokenService = refreshTokenService;
     this.userService = userService;
+    this.passwordResetService = passwordResetService;
   }
 
   /** Makes sure the XSRF-TOKEN cookie is set. */
@@ -84,6 +91,23 @@ public class AuthController {
   @PostMapping("/logout")
   public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse res) {
     authService.logout(AuthCookies.read(req, AuthCookies.REFRESH).orElse(null));
+    sessionIssuer.clear(res);
+    return ResponseEntity.noContent().build();
+  }
+
+  /** Starts a password reset. The answer is the same for known and unknown emails. */
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Map<String, String>> forgotPassword(
+      @Valid @RequestBody ForgotPasswordRequest req) {
+    passwordResetService.requestReset(req.email());
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("status", FORGOT_MESSAGE));
+  }
+
+  /** Sets a new password from a reset link and signs the user out everywhere. */
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(
+      @Valid @RequestBody ResetPasswordRequest req, HttpServletResponse res) {
+    authService.resetPassword(req);
     sessionIssuer.clear(res);
     return ResponseEntity.noContent().build();
   }
