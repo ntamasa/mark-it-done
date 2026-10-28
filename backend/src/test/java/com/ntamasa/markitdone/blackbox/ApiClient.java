@@ -82,6 +82,27 @@ final class ApiClient {
 				.build());
 	}
 
+	/** PATCH with a JSON body, without any CSRF header. Useful for asserting CSRF rejection. */
+	HttpResponse<String> patchJson(String path, String json, Cookie... cookies) throws Exception {
+		return send(builder(path, cookies)
+				.header("Content-Type", "application/json")
+				.method("PATCH", HttpRequest.BodyPublishers.ofString(json))
+				.build());
+	}
+
+	/** PATCH with a JSON body, with a freshly fetched CSRF cookie and matching X-XSRF-TOKEN header. */
+	HttpResponse<String> patchJsonWithCsrf(String path, String json, Cookie... extraCookies) throws Exception {
+		Cookie csrf = fetchCsrfCookie();
+		Cookie[] all = new Cookie[extraCookies.length + 1];
+		all[0] = csrf;
+		System.arraycopy(extraCookies, 0, all, 1, extraCookies.length);
+		return send(builder(path, all)
+				.header("Content-Type", "application/json")
+				.header(CSRF_HEADER, csrf.value())
+				.method("PATCH", HttpRequest.BodyPublishers.ofString(json))
+				.build());
+	}
+
 	/** POST without a body, with a freshly fetched CSRF cookie and matching X-XSRF-TOKEN header. */
 	HttpResponse<String> postWithCsrf(String path, Cookie... extraCookies) throws Exception {
 		Cookie csrf = fetchCsrfCookie();
