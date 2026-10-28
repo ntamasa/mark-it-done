@@ -1,0 +1,159 @@
+// Shared auth form styles (register, login): native inputs styled with tokens.
+// The red border only shows on input[aria-invalid='true'], which pages set after blur/submit.
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+
+  label {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+    box-shadow: var(--shadow-sm);
+    font: inherit;
+    font-size: 16px;
+    line-height: 24px;
+    transition: border-color var(--motion-fast) ease-out;
+
+    &:focus-visible {
+      border-color: var(--color-ring);
+    }
+  }
+
+  input[aria-invalid='true'] {
+    border-color: var(--color-destructive);
+  }
+}
+
+.password-wrap {
+  position: relative;
+
+  input {
+    padding-right: 52px;
+  }
+}
+
+.eye-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-foreground);
+  }
+}
+
+.field-error {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-destructive);
+}
+
+.server-error {
+  margin-top: var(--space-md);
+  border-radius: var(--radius-sm);
+
+  p-message {
+    display: block;
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--space-sm);
+}
+
+.secondary-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: var(--space-sm);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-primary-strong);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-strong);
+  font: inherit;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
+
+  input[type='checkbox'] {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--color-primary-strong);
+    cursor: pointer;
+  }
+
+  .remember-hint {
+    color: var(--color-muted-foreground);
+  }
+}

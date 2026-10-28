@@ -132,4 +132,11 @@ textarea {
     background-color: var(--color-accent) !important;
     opacity: 0.8;
   }
+
+  // PrimeNG sets its own transparent outline and halo on focus; restore the MASTER focus ring.
+  &:focus-visible {
+    outline: 2px solid var(--color-ring) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+  }
 }
