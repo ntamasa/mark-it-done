@@ -1,6 +1,37 @@
 // Typography - MASTER §6
 
 // ============================================================================
+// Base typography (MASTER §6): Plus Jakarta Sans, body 16/24/400.
+// Headings, buttons and form controls inherit the family, because native
+// buttons and inputs do not inherit font by default. PrimeNG components
+// inherit from the body as well (Aura typography.fontFamily is "inherit").
+// ============================================================================
+
+html,
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+// ============================================================================
 // Type scale (mobile-first, desktop overrides at ≥1024px)
 // ============================================================================
 
