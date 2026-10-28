@@ -19,6 +19,7 @@ import com.ntamasa.markitdone.user.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class AuthServiceTest {
@@ -62,6 +63,21 @@ class AuthServiceTest {
     verify(passwordEncoder).matches("pw", "DUMMY");
     verify(auditService)
         .recordStandalone(eq(AuditAction.LOGIN_FAILED), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  void registerRejectsDuplicateEmailWhenInsertHitsUniqueConstraint() {
+    when(userRepository.existsByEmail("a@b.com")).thenReturn(false);
+    when(userRepository.saveAndFlush(any(User.class)))
+        .thenThrow(new DataIntegrityViolationException("uq_users_email"));
+
+    assertThatThrownBy(
+            () ->
+                service.register(
+                    new RegisterRequest("  A  ", " A@B.com ", "Strong-Passw0rd!", null)))
+        .isInstanceOfSatisfying(
+            ApiException.class, e -> assertThat(e.getCode()).isEqualTo(ErrorCode.EMAIL_TAKEN));
+    verify(auditService, never()).record(any(), any(), any(), any(), any(), any());
   }
 
   @Test
