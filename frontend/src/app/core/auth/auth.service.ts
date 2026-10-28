@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, finalize, firstValueFrom, of, shareReplay, switchMap, tap } from 'rxjs';
+import { Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs';
 import { LoginRequest, RegisterRequest, User } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +42,14 @@ export class AuthService {
 
   register(req: RegisterRequest): Observable<User> {
     return this.http.post<User>('/api/auth/register', req).pipe(tap((u) => this.userSignal.set(u)));
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post('/api/auth/forgot-password', { email }).pipe(map(() => undefined));
+  }
+
+  resetPassword(token: string, password: string): Observable<void> {
+    return this.http.post<void>('/api/auth/reset-password', { token, password });
   }
 
   /** Single-flight: concurrent callers share one refresh request. */
