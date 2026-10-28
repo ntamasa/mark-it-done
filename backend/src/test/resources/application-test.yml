@@ -9,3 +9,7 @@ spring:
   mail:
     host: "localhost"
     port: 3025
+management:
+  health:
+    mail:
+      enabled: false
