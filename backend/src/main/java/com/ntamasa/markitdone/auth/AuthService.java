@@ -4,18 +4,21 @@ import com.ntamasa.markitdone.audit.AuditAction;
 import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.user.ThemePreference;
 import com.ntamasa.markitdone.user.User;
 import com.ntamasa.markitdone.user.UserRepository;
 import com.ntamasa.markitdone.user.UserService;
+import com.ntamasa.markitdone.user.dto.UserDto;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Login and logout rules. */
+/** Registration, login and logout rules. */
 @Service
 public class AuthService {
 
@@ -41,6 +44,43 @@ public class AuthService {
     this.refreshTokenService = refreshTokenService;
     this.refreshTokenRepository = refreshTokenRepository;
     this.dummyHash = passwordEncoder.encode("dummy-password-for-timing-equalisation");
+  }
+
+  /**
+   * Creates a new account with a normalised email, a trimmed display name and an Argon2 password
+   * hash, and audits USER_REGISTERED. An email already in use, including one taken by a concurrent
+   * registration that hits the unique constraint, is rejected.
+   *
+   * @param req the registration request
+   * @return the created user
+   * @throws ApiException EMAIL_TAKEN when an account with the email already exists
+   */
+  @Transactional
+  public User register(RegisterRequest req) {
+    String email = UserService.normalizeEmail(req.email());
+    if (userRepository.existsByEmail(email)) {
+      throw emailTaken(null);
+    }
+    User user =
+        new User(
+            email,
+            req.displayName().trim(),
+            passwordEncoder.encode(req.password()),
+            UserService.validZoneOrUtc(req.timezone()),
+            ThemePreference.SYSTEM);
+    try {
+      userRepository.saveAndFlush(user);
+    } catch (DataIntegrityViolationException e) {
+      throw emailTaken(e);
+    }
+    auditService.record(
+        AuditAction.USER_REGISTERED,
+        user.getId(),
+        ENTITY_TYPE,
+        user.getId(),
+        null,
+        UserDto.of(user));
+    return user;
   }
 
   /**
@@ -105,6 +145,13 @@ public class AuthService {
                     null,
                     null));
     refreshTokenService.revokeFamilyOf(rawRefreshToken);
+  }
+
+  private static ApiException emailTaken(Throwable cause) {
+    String message = "An account with this email already exists.";
+    return cause == null
+        ? new ApiException(ErrorCode.EMAIL_TAKEN, message)
+        : new ApiException(ErrorCode.EMAIL_TAKEN, message, cause);
   }
 
   private static boolean isValidZone(String timezone) {

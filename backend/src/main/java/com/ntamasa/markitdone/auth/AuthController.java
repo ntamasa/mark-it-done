@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Login, refresh, logout, current user and CSRF bootstrap endpoints. */
+/** Register, login, refresh, logout, current user and CSRF bootstrap endpoints. */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -44,6 +44,15 @@ public class AuthController {
     // The token is deferred: reading its value makes the filter write the cookie.
     token.getToken();
     return ResponseEntity.noContent().build();
+  }
+
+  /** Creates an account and starts a session without remember-me. */
+  @PostMapping("/register")
+  public ResponseEntity<UserDto> register(
+      @Valid @RequestBody RegisterRequest req, HttpServletResponse res) {
+    User user = authService.register(req);
+    sessionIssuer.issue(user, false, res);
+    return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.of(user));
   }
 
   /** Logs in and starts a session. */

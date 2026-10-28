@@ -46,6 +46,27 @@ class UserServiceTest {
   }
 
   @Test
+  @DisplayName("validZoneOrUtc returns a valid IANA zone unchanged")
+  void testValidZoneOrUtcKeepsValidZone() {
+    assertThat(UserService.validZoneOrUtc("Europe/Budapest")).isEqualTo("Europe/Budapest");
+    assertThat(UserService.validZoneOrUtc("UTC")).isEqualTo("UTC");
+  }
+
+  @Test
+  @DisplayName("validZoneOrUtc falls back to UTC for unknown zones")
+  void testValidZoneOrUtcFallsBackForUnknownZone() {
+    assertThat(UserService.validZoneOrUtc("Mars/Base")).isEqualTo("UTC");
+  }
+
+  @Test
+  @DisplayName("validZoneOrUtc falls back to UTC for null or blank input")
+  void testValidZoneOrUtcFallsBackForMissingZone() {
+    assertThat(UserService.validZoneOrUtc(null)).isEqualTo("UTC");
+    assertThat(UserService.validZoneOrUtc("")).isEqualTo("UTC");
+    assertThat(UserService.validZoneOrUtc("   ")).isEqualTo("UTC");
+  }
+
+  @Test
   @DisplayName("getById returns user when found")
   void testGetByIdReturnsUserWhenFound() {
     UUID userId = UUID.randomUUID();

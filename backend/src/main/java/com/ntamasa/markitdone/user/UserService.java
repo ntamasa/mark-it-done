@@ -1,6 +1,8 @@
 package com.ntamasa.markitdone.user;
 
 import com.ntamasa.markitdone.common.ApiException;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,24 @@ public class UserService {
    */
   public static String normalizeEmail(String raw) {
     return raw.trim().toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Return the given IANA time zone, or UTC when it is missing or not a valid zone.
+   *
+   * @param zone the time zone identifier, may be null
+   * @return the zone identifier, or "UTC" when the input is null, blank or unknown
+   */
+  public static String validZoneOrUtc(String zone) {
+    if (zone == null || zone.isBlank()) {
+      return "UTC";
+    }
+    try {
+      ZoneId.of(zone);
+      return zone;
+    } catch (DateTimeException e) {
+      return "UTC";
+    }
   }
 
   /**
