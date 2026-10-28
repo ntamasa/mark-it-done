@@ -9,3 +9,6 @@ databaseChangeLog:
 - include:
     file: "changes/003-refresh-tokens.yaml"
     relativeToChangelogFile: true
+- include:
+    file: "changes/004-password-reset-tokens.yaml"
+    relativeToChangelogFile: true

@@ -179,7 +179,12 @@ public class RefreshTokenService {
     }
   }
 
-  private static String newRawToken() {
+  /**
+   * Generates a new raw token: 32 random bytes encoded as base64url without padding.
+   *
+   * @return the raw token value
+   */
+  public static String newRawToken() {
     byte[] bytes = new byte[TOKEN_BYTES];
     SECURE_RANDOM.nextBytes(bytes);
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
