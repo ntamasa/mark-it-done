@@ -29,6 +29,7 @@ class AuthServiceTest {
   private AuditService auditService;
   private RefreshTokenService refreshTokenService;
   private RefreshTokenRepository refreshTokenRepository;
+  private PasswordResetService passwordResetService;
   private AuthService service;
   private User user;
 
@@ -39,6 +40,7 @@ class AuthServiceTest {
     auditService = mock(AuditService.class);
     refreshTokenService = mock(RefreshTokenService.class);
     refreshTokenRepository = mock(RefreshTokenRepository.class);
+    passwordResetService = mock(PasswordResetService.class);
     when(passwordEncoder.encode(any())).thenReturn("DUMMY");
     service =
         new AuthService(
@@ -46,7 +48,8 @@ class AuthServiceTest {
             passwordEncoder,
             auditService,
             refreshTokenService,
-            refreshTokenRepository);
+            refreshTokenRepository,
+            passwordResetService);
     user = new User("a@b.com", "A", "HASH", "UTC", ThemePreference.SYSTEM);
   }
 
@@ -108,5 +111,32 @@ class AuthServiceTest {
   void logoutWithoutTokenDoesNothing() {
     service.logout(null);
     verify(refreshTokenService, never()).revokeFamilyOf(any());
+  }
+
+  @Test
+  void resetPasswordConsumesChangesHashRevokesAllAndAudits() {
+    java.util.UUID id = java.util.UUID.randomUUID();
+    when(passwordResetService.consume("tok")).thenReturn(id);
+    when(userRepository.findById(id)).thenReturn(Optional.of(user));
+    when(passwordEncoder.encode("New-pass1!")).thenReturn("NEWHASH");
+
+    service.resetPassword(new ResetPasswordRequest("tok", "New-pass1!"));
+
+    assertThat(user.getPasswordHash()).isEqualTo("NEWHASH");
+    verify(userRepository).save(user);
+    verify(refreshTokenService).revokeAllForUser(id);
+    verify(auditService)
+        .record(eq(AuditAction.PASSWORD_RESET_COMPLETED), eq(id), any(), eq(id), any(), any());
+  }
+
+  @Test
+  void resetPasswordWithInvalidTokenChangesNothing() {
+    when(passwordResetService.consume("bad"))
+        .thenThrow(new ApiException(ErrorCode.RESET_TOKEN_INVALID, "x"));
+
+    assertThatThrownBy(() -> service.resetPassword(new ResetPasswordRequest("bad", "New-pass1!")))
+        .isInstanceOf(ApiException.class);
+    verify(refreshTokenService, never()).revokeAllForUser(any());
+    verify(userRepository, never()).save(any());
   }
 }

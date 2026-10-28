@@ -13,6 +13,7 @@ import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class AuthService {
   private final AuditService auditService;
   private final RefreshTokenService refreshTokenService;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final PasswordResetService passwordResetService;
   private final String dummyHash;
 
   public AuthService(
@@ -37,12 +39,14 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       AuditService auditService,
       RefreshTokenService refreshTokenService,
-      RefreshTokenRepository refreshTokenRepository) {
+      RefreshTokenRepository refreshTokenRepository,
+      PasswordResetService passwordResetService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.auditService = auditService;
     this.refreshTokenService = refreshTokenService;
     this.refreshTokenRepository = refreshTokenRepository;
+    this.passwordResetService = passwordResetService;
     this.dummyHash = passwordEncoder.encode("dummy-password-for-timing-equalisation");
   }
 
@@ -145,6 +149,25 @@ public class AuthService {
                     null,
                     null));
     refreshTokenService.revokeFamilyOf(rawRefreshToken);
+  }
+
+  /**
+   * Sets a new password from a reset link: consumes the link, stores the new hash, revokes every
+   * refresh token of the user and audits PASSWORD_RESET_COMPLETED, all in one transaction so that a
+   * failure leaves the link usable.
+   *
+   * @param req the token and the new password
+   * @throws ApiException RESET_TOKEN_INVALID when the link is missing, used or expired
+   */
+  @Transactional
+  public void resetPassword(ResetPasswordRequest req) {
+    UUID userId = passwordResetService.consume(req.token());
+    User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User"));
+    user.setPasswordHash(passwordEncoder.encode(req.password()));
+    userRepository.save(user);
+    refreshTokenService.revokeAllForUser(userId);
+    auditService.record(
+        AuditAction.PASSWORD_RESET_COMPLETED, userId, ENTITY_TYPE, userId, null, null);
   }
 
   private static ApiException emailTaken(Throwable cause) {
