@@ -6,3 +6,6 @@ databaseChangeLog:
 - include:
     file: "changes/002-users.yaml"
     relativeToChangelogFile: true
+- include:
+    file: "changes/003-refresh-tokens.yaml"
+    relativeToChangelogFile: true

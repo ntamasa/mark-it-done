@@ -1,0 +1,62 @@
+---
+databaseChangeLog:
+- changeSet:
+    id: "003-refresh-tokens"
+    author: "markitdone"
+    changes:
+    - createTable:
+        tableName: "refresh_tokens"
+        columns:
+        - column:
+            name: "id"
+            type: "uuid"
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: "user_id"
+            type: "uuid"
+            constraints:
+              nullable: false
+              foreignKeyName: "fk_refresh_tokens_user"
+              references: "users(id)"
+              deleteCascade: true
+        - column:
+            name: "family_id"
+            type: "uuid"
+            constraints:
+              nullable: false
+        - column:
+            name: "token_hash"
+            type: "varchar(64)"
+            constraints:
+              nullable: false
+              unique: true
+              uniqueConstraintName: "uq_refresh_tokens_token_hash"
+        - column:
+            name: "remember_me"
+            type: "boolean"
+            constraints:
+              nullable: false
+        - column:
+            name: "created_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+        - column:
+            name: "expires_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+        - column:
+            name: "revoked_at"
+            type: "timestamptz"
+        - column:
+            name: "replaced_by"
+            type: "uuid"
+    - createIndex:
+        tableName: "refresh_tokens"
+        indexName: "ix_refresh_tokens_family_id"
+        columns:
+        - column:
+            name: "family_id"
