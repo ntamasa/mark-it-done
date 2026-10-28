@@ -1,0 +1,13 @@
+<button type="button" class="theme-btn" aria-label="Theme" [attr.title]="'Theme: ' + mode()" (click)="cycleTheme()">
+  <i [class]="themeIcon()" aria-hidden="true"></i>
+</button>
+<main class="auth-page">
+  <section class="auth-card glass">
+    <p class="wordmark">markitDONE</p>
+    <h1 class="t-title title">{{ title() }}</h1>
+    @if (subtitle()) {
+      <p class="t-body-sm subtitle">{{ subtitle() }}</p>
+    }
+    <ng-content />
+  </section>
+</main>

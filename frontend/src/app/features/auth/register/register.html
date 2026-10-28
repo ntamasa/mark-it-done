@@ -1,0 +1,90 @@
+<app-auth-card title="Create account" subtitle="Plan your week in minutes.">
+  @if (serverError(); as message) {
+    <div #serverErrorEl class="server-error" tabindex="-1" role="alert">
+      <p-message severity="error">{{ message }}</p-message>
+    </div>
+  }
+  <form class="form" novalidate (submit)="onSubmit($event)">
+    <div class="field">
+      <label for="reg-name">Display name *</label>
+      <input
+        id="reg-name"
+        type="text"
+        autocomplete="name"
+        [formField]="registerForm.displayName"
+        [attr.aria-invalid]="errorOf(registerForm.displayName) ? 'true' : null"
+        [attr.aria-describedby]="errorOf(registerForm.displayName) ? 'reg-name-error' : null"
+      />
+      @if (errorOf(registerForm.displayName); as msg) {
+        <p class="field-error" id="reg-name-error" role="alert">{{ msg }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-email">Email *</label>
+      <input
+        id="reg-email"
+        type="email"
+        autocomplete="email"
+        (input)="serverError.set(null)"
+        [formField]="registerForm.email"
+        [attr.aria-invalid]="errorOf(registerForm.email) ? 'true' : null"
+        [attr.aria-describedby]="errorOf(registerForm.email) ? 'reg-email-error' : null"
+      />
+      @if (errorOf(registerForm.email); as msg) {
+        <p class="field-error" id="reg-email-error" role="alert">{{ msg }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-password">Password *</label>
+      <div class="password-wrap">
+        <input
+          id="reg-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          autocomplete="new-password"
+          [formField]="registerForm.password"
+          [attr.aria-invalid]="errorOf(registerForm.password) ? 'true' : null"
+          [attr.aria-describedby]="'reg-password-rules' + (errorOf(registerForm.password) ? ' reg-password-error' : '')"
+        />
+        <button
+          type="button"
+          class="eye-btn"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          [attr.aria-pressed]="showPassword()"
+          (click)="togglePassword()"
+        >
+          <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'" aria-hidden="true"></i>
+        </button>
+      </div>
+      <app-password-rules [password]="registerForm.password().value()" listId="reg-password-rules" />
+      @if (errorOf(registerForm.password); as msg) {
+        <p class="field-error" id="reg-password-error" role="alert">{{ msg }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-confirm">Confirm password *</label>
+      <input
+        id="reg-confirm"
+        [type]="showPassword() ? 'text' : 'password'"
+        autocomplete="new-password"
+        [formField]="registerForm.confirmPassword"
+        [attr.aria-invalid]="errorOf(registerForm.confirmPassword) ? 'true' : null"
+        [attr.aria-describedby]="errorOf(registerForm.confirmPassword) ? 'reg-confirm-error' : null"
+      />
+      @if (errorOf(registerForm.confirmPassword); as msg) {
+        <p class="field-error" id="reg-confirm-error" role="alert">{{ msg }}</p>
+      }
+    </div>
+
+    <p-button
+      type="submit"
+      styleClass="btn-accent submit-btn"
+      [label]="loading() ? 'Please wait…' : 'Create account'"
+      [loading]="loading()"
+      [fluid]="true"
+    />
+  </form>
+  <a class="secondary-link" routerLink="/login">Already have an account? Log in</a>
+</app-auth-card>
