@@ -4,8 +4,11 @@ import { WeekPlaceholder } from './features/week/week-placeholder';
 
 export const routes: Routes = [
   { path: 'week', component: WeekPlaceholder, canActivate: [authGuard] },
-  // Placeholder until the login page exists (MAR-59); it prevents a /login <-> /week redirect loop.
-  { path: 'login', component: WeekPlaceholder, canActivate: [guestGuard] },
+  {
+    path: 'login',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
+  },
   {
     path: 'register',
     canActivate: [guestGuard],
