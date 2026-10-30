@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs';
-import { LoginRequest, RegisterRequest, User } from './auth.models';
+import { LoginRequest, RegisterRequest, ThemePreference, User } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -34,6 +34,28 @@ export class AuthService {
       ),
     );
     this.userSignal.set(user);
+    if (user) {
+      this.syncTimezone(user);
+    }
+  }
+
+  /** Silently updates the stored time zone when the browser's differs. Errors are ignored. */
+  private syncTimezone(user: User): void {
+    let zone: string | undefined;
+    try {
+      zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      return;
+    }
+    if (!zone || zone === user.timezone) {
+      return;
+    }
+    this.updateMe({ timezone: zone }).subscribe({ error: () => undefined });
+  }
+
+  /** PATCH /api/users/me; on success the user signal is updated with the response. */
+  updateMe(patch: { timezone?: string; themePreference?: ThemePreference }): Observable<User> {
+    return this.http.patch<User>('/api/users/me', patch).pipe(tap((u) => this.userSignal.set(u)));
   }
 
   login(req: LoginRequest): Observable<User> {

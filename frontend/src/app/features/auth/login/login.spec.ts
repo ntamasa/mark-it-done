@@ -26,7 +26,7 @@ describe('Login', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         MessageService,
-        { provide: AuthService, useValue: { login } },
+        { provide: AuthService, useValue: { login, user: () => null, isLoggedIn: () => false } },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(returnUrl ? { returnUrl } : {}) } },

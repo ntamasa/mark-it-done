@@ -18,7 +18,7 @@ const USER: User = {
   id: '1',
   email: 'a@b.c',
   displayName: 'A',
-  timezone: 'UTC',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   themePreference: 'LIGHT',
 };
 
@@ -54,6 +54,27 @@ describe('auth', () => {
     await p;
     expect(auth.user()).toEqual(USER);
     expect(auth.isLoggedIn()).toBe(true);
+  });
+
+  it('init patches the time zone silently when it differs and ignores errors', async () => {
+    const p = auth.init();
+    mock.expectOne('/api/auth/csrf').flush(null, { status: 204, statusText: 'No Content' });
+    await vi.waitFor(() => mock.expectOne('/api/auth/me').flush({ ...USER, timezone: 'Pacific/Kiritimati-Fake' }));
+    await p;
+    const req = mock.expectOne('/api/users/me');
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ timezone: USER.timezone });
+    req.flush(null, { status: 400, statusText: 'Bad Request' });
+    expect(auth.user()?.timezone).toBe('Pacific/Kiritimati-Fake');
+  });
+
+  it('init updates the user signal when the time zone patch succeeds', async () => {
+    const p = auth.init();
+    mock.expectOne('/api/auth/csrf').flush(null, { status: 204, statusText: 'No Content' });
+    await vi.waitFor(() => mock.expectOne('/api/auth/me').flush({ ...USER, timezone: 'Etc/Fake' }));
+    await p;
+    mock.expectOne('/api/users/me').flush(USER);
+    expect(auth.user()).toEqual(USER);
   });
 
   it('init starts logged out without redirect when /me and refresh fail', async () => {

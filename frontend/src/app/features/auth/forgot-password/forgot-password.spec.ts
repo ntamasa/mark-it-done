@@ -19,7 +19,7 @@ describe('ForgotPassword', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { forgotPassword } },
+        { provide: AuthService, useValue: { forgotPassword, user: () => null, isLoggedIn: () => false } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ForgotPassword);
