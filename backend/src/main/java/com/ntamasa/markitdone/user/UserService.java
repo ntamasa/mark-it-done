@@ -1,11 +1,16 @@
 package com.ntamasa.markitdone.user;
 
+import com.ntamasa.markitdone.audit.AuditAction;
+import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.common.ApiException;
+import com.ntamasa.markitdone.user.dto.UserDto;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for managing user accounts.
@@ -16,15 +21,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+  private static final String ENTITY_TYPE = "User";
+
   private final UserRepository userRepository;
+  private final AuditService auditService;
 
   /**
    * Create a UserService.
    *
    * @param userRepository the user repository
+   * @param auditService the audit service
    */
-  public UserService(UserRepository userRepository) {
+  public UserService(UserRepository userRepository, AuditService auditService) {
     this.userRepository = userRepository;
+    this.auditService = auditService;
   }
 
   /**
@@ -69,5 +79,41 @@ public class UserService {
    */
   public User getById(UUID id) {
     return userRepository.findById(id).orElseThrow(() -> ApiException.notFound("User"));
+  }
+
+  /**
+   * Updates the time zone and theme preference of a user in one transaction.
+   *
+   * <p>A null request or a null field leaves that value unchanged. When a value actually changes, a
+   * USER_PREFERENCES_UPDATED audit entry records the values before and after the change.
+   *
+   * @param userId the ID of the user to update
+   * @param req the fields to change, may be null
+   * @return the updated user
+   * @throws com.ntamasa.markitdone.common.ApiException if the user is not found
+   */
+  @Transactional
+  public UserDto updatePreferences(UUID userId, UpdatePreferencesRequest req) {
+    User user = getById(userId);
+    Map<String, Object> before = preferences(user);
+    if (req != null) {
+      if (req.timezone() != null) {
+        user.setTimezone(req.timezone());
+      }
+      if (req.themePreference() != null) {
+        user.setThemePreference(req.themePreference());
+      }
+    }
+    Map<String, Object> after = preferences(user);
+    if (!before.equals(after)) {
+      auditService.record(
+          AuditAction.USER_PREFERENCES_UPDATED, userId, ENTITY_TYPE, userId, before, after);
+    }
+    return UserDto.of(user);
+  }
+
+  private static Map<String, Object> preferences(User user) {
+    return Map.of(
+        "timezone", user.getTimezone(), "themePreference", user.getThemePreference().name());
   }
 }

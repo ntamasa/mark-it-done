@@ -2,10 +2,18 @@ package com.ntamasa.markitdone.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ntamasa.markitdone.audit.AuditAction;
+import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.user.dto.UserDto;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class UserServiceTest {
 
   @Mock private UserRepository userRepository;
+  @Mock private AuditService auditService;
 
   @InjectMocks private UserService userService;
 
@@ -90,5 +99,86 @@ class UserServiceTest {
         .hasMessage("User not found")
         .extracting("code")
         .isEqualTo(ErrorCode.NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("updatePreferences changes both fields and audits the before and after values")
+  void testUpdatePreferencesChangesBothFieldsAndAudits() {
+    UUID userId = UUID.randomUUID();
+    User user = new User("test@example.com", "Test User", "hash", "UTC", ThemePreference.SYSTEM);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    UserDto result =
+        userService.updatePreferences(
+            userId, new UpdatePreferencesRequest("America/New_York", ThemePreference.DARK));
+
+    assertThat(result.timezone()).isEqualTo("America/New_York");
+    assertThat(result.themePreference()).isEqualTo(ThemePreference.DARK);
+    verify(auditService)
+        .record(
+            eq(AuditAction.USER_PREFERENCES_UPDATED),
+            eq(userId),
+            eq("User"),
+            eq(userId),
+            eq(Map.of("timezone", "UTC", "themePreference", "SYSTEM")),
+            eq(Map.of("timezone", "America/New_York", "themePreference", "DARK")));
+  }
+
+  @Test
+  @DisplayName("updatePreferences leaves null fields unchanged")
+  void testUpdatePreferencesKeepsNullFields() {
+    UUID userId = UUID.randomUUID();
+    User user = new User("test@example.com", "Test User", "hash", "UTC", ThemePreference.LIGHT);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    UserDto result =
+        userService.updatePreferences(
+            userId, new UpdatePreferencesRequest(null, ThemePreference.DARK));
+
+    assertThat(result.timezone()).isEqualTo("UTC");
+    assertThat(result.themePreference()).isEqualTo(ThemePreference.DARK);
+  }
+
+  @Test
+  @DisplayName("updatePreferences with a null request changes nothing and does not audit")
+  void testUpdatePreferencesNullRequestIsNoOp() {
+    UUID userId = UUID.randomUUID();
+    User user = new User("test@example.com", "Test User", "hash", "UTC", ThemePreference.SYSTEM);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    UserDto result = userService.updatePreferences(userId, null);
+
+    assertThat(result.timezone()).isEqualTo("UTC");
+    assertThat(result.themePreference()).isEqualTo(ThemePreference.SYSTEM);
+    verify(auditService, never()).record(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  @DisplayName("updatePreferences does not audit when the values are the same")
+  void testUpdatePreferencesSameValuesDoesNotAudit() {
+    UUID userId = UUID.randomUUID();
+    User user = new User("test@example.com", "Test User", "hash", "UTC", ThemePreference.SYSTEM);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    userService.updatePreferences(
+        userId, new UpdatePreferencesRequest("UTC", ThemePreference.SYSTEM));
+
+    verify(auditService, never()).record(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  @DisplayName("updatePreferences throws NOT_FOUND when user not found")
+  void testUpdatePreferencesThrowsNotFoundWhenMissing() {
+    UUID userId = UUID.randomUUID();
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(
+            () ->
+                userService.updatePreferences(
+                    userId, new UpdatePreferencesRequest("UTC", ThemePreference.DARK)))
+        .isInstanceOf(ApiException.class)
+        .extracting("code")
+        .isEqualTo(ErrorCode.NOT_FOUND);
+    verify(auditService, never()).record(any(), any(), any(), any(), any(), any());
   }
 }

@@ -9,11 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 /**
  * Global exception handler for API errors. Handles ApiException, bean-validation failures, unknown
@@ -58,6 +60,30 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         .forEach(
             fieldError ->
                 errors.add(new FieldError(fieldError.getField(), fieldError.getDefaultMessage())));
+
+    ProblemDetail detail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
+    detail.setProperty("code", ErrorCode.VALIDATION_FAILED.name());
+    detail.setProperty("errors", errors);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
+  }
+
+  /**
+   * Handle unreadable request bodies, such as an unknown enum value, by returning a 400
+   * VALIDATION_FAILED. The field is named when Jackson can tell which property failed.
+   */
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    List<FieldError> errors = new ArrayList<>();
+    if (ex.getCause() instanceof InvalidFormatException invalid
+        && !invalid.getPath().isEmpty()
+        && invalid.getPath().get(0).getPropertyName() != null) {
+      errors.add(new FieldError(invalid.getPath().get(0).getPropertyName(), "Invalid value"));
+    }
 
     ProblemDetail detail =
         ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
