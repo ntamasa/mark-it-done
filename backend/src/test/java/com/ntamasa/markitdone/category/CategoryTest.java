@@ -60,4 +60,15 @@ class CategoryTest {
             Swatch.LIME,
             Swatch.SLATE);
   }
+
+  @Test
+  @DisplayName("changeSwatch() replaces the swatch and keeps the name")
+  void changeSwatchKeepsName() {
+    Category category = new Category(UUID.randomUUID(), "Work", Swatch.SKY);
+
+    category.changeSwatch(Swatch.ROSE);
+
+    assertThat(category.getSwatch()).isEqualTo(Swatch.ROSE);
+    assertThat(category.getName()).isEqualTo("Work");
+  }
 }

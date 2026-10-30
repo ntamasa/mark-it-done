@@ -79,6 +79,15 @@ public class Category {
     this.nameKey = key(name);
   }
 
+  /**
+   * Changes the swatch of the category.
+   *
+   * @param swatch the new swatch
+   */
+  public void changeSwatch(Swatch swatch) {
+    this.swatch = swatch;
+  }
+
   // Getters
   public UUID getId() {
     return id;
