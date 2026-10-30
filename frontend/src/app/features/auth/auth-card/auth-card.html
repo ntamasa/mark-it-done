@@ -1,4 +1,10 @@
-<button type="button" class="theme-btn" aria-label="Theme" [attr.title]="'Theme: ' + mode()" (click)="cycleTheme()">
+<button
+  type="button"
+  class="theme-btn"
+  [attr.aria-label]="themeLabel()"
+  [attr.title]="themeLabel()"
+  (click)="cycleTheme()"
+>
   <i [class]="themeIcon()" aria-hidden="true"></i>
 </button>
 <main class="auth-page">

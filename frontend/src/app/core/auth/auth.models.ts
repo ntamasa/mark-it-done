@@ -1,4 +1,4 @@
-export type ThemePreference = 'LIGHT' | 'DARK';
+export type ThemePreference = 'SYSTEM' | 'LIGHT' | 'DARK';
 
 export interface User {
   id: string;

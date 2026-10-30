@@ -26,7 +26,7 @@ describe('Register', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         MessageService,
-        { provide: AuthService, useValue: { register } },
+        { provide: AuthService, useValue: { register, user: () => null, isLoggedIn: () => false } },
       ],
     }).compileComponents();
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);

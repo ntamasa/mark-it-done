@@ -23,7 +23,7 @@ describe('ResetPassword', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         MessageService,
-        { provide: AuthService, useValue: { resetPassword } },
+        { provide: AuthService, useValue: { resetPassword, user: () => null, isLoggedIn: () => false } },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(token ? { token } : {}) } },
