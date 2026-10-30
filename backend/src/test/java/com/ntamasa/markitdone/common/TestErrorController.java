@@ -1,5 +1,6 @@
 package com.ntamasa.markitdone.common;
 
+import com.ntamasa.markitdone.user.ThemePreference;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,15 @@ public class TestErrorController {
   public void validateRequest(@Valid @RequestBody TestRequest request) {
     // Do nothing, just validate
   }
+
+  /** Endpoint that reads a request body with an enum field. */
+  @PostMapping("/theme")
+  public void readTheme(@RequestBody TestThemeRequest request) {
+    // Do nothing, the body must only be readable
+  }
+
+  /** Test request DTO with an enum field. */
+  public record TestThemeRequest(ThemePreference themePreference) {}
 
   /** Test request DTO for validation testing. */
   public record TestRequest(

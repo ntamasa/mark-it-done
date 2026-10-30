@@ -51,6 +51,21 @@ class ApiExceptionHandlerTest {
 
   @Test
   @WithMockUser
+  void testUnknownEnumValueIsValidationFailure() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/test/theme")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"themePreference\":\"PURPLE\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code", is("VALIDATION_FAILED")))
+        .andExpect(jsonPath("$.detail", is("Validation failed")))
+        .andExpect(jsonPath("$.errors[0].field", is("themePreference")));
+  }
+
+  @Test
+  @WithMockUser
   void testUnexpectedException() throws Exception {
     mockMvc
         .perform(get("/api/test/unexpected-exception"))
