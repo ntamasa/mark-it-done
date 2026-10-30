@@ -103,6 +103,34 @@ final class ApiClient {
 				.build());
 	}
 
+	/** PUT with a JSON body, without any CSRF header. Useful for asserting CSRF rejection. */
+	HttpResponse<String> putJson(String path, String json, Cookie... cookies) throws Exception {
+		return send(builder(path, cookies)
+				.header("Content-Type", "application/json")
+				.PUT(HttpRequest.BodyPublishers.ofString(json))
+				.build());
+	}
+
+	/** PUT with a JSON body, with a freshly fetched CSRF cookie and matching X-XSRF-TOKEN header. */
+	HttpResponse<String> putJsonWithCsrf(String path, String json, Cookie... extraCookies) throws Exception {
+		Cookie csrf = fetchCsrfCookie();
+		Cookie[] all = new Cookie[extraCookies.length + 1];
+		all[0] = csrf;
+		System.arraycopy(extraCookies, 0, all, 1, extraCookies.length);
+		return send(builder(path, all)
+				.header("Content-Type", "application/json")
+				.header(CSRF_HEADER, csrf.value())
+				.PUT(HttpRequest.BodyPublishers.ofString(json))
+				.build());
+	}
+
+	/** GET with the given cookies, asserting the response is 200 with a JSON body. Returns the parsed body. */
+	JsonNode getJsonOk(String path, Cookie... cookies) throws Exception {
+		HttpResponse<String> response = get(path, cookies);
+		assertThat(response.statusCode()).as("GET " + path + " status, body: " + response.body()).isEqualTo(200);
+		return json(response);
+	}
+
 	/** POST without a body, with a freshly fetched CSRF cookie and matching X-XSRF-TOKEN header. */
 	HttpResponse<String> postWithCsrf(String path, Cookie... extraCookies) throws Exception {
 		Cookie csrf = fetchCsrfCookie();
