@@ -1,5 +1,5 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
 import {
   provideHttpClient,
   HTTP_INTERCEPTORS,
@@ -9,6 +9,7 @@ import {
 } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageTitleStrategy } from './core/ui/page-title.strategy';
 import { routes } from './app.routes';
 import { MarkitdonePreset } from './core/theme/markitdone-preset';
 import { ThemeService } from './core/theme/theme.service';
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    { provide: TitleStrategy, useExisting: PageTitleStrategy },
     provideHttpClient(
       withInterceptorsFromDi(),
       withInterceptors([authRefreshInterceptor]),

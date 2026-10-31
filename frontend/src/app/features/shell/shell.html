@@ -1,0 +1,64 @@
+<header class="topbar glass">
+  <span class="wordmark">markitDONE</span>
+
+  @if (isDesktop()) {
+    <div class="topbar-center">
+      @if (header.pager(); as pager) {
+        <app-pager [pager]="pager" />
+      } @else {
+        <h1 class="topbar-title">{{ header.title() }}</h1>
+      }
+    </div>
+  }
+
+  <div class="topbar-actions">
+    <button
+      type="button"
+      class="icon-btn"
+      [attr.aria-label]="isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+      (click)="toggleTheme()"
+    >
+      <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'" aria-hidden="true"></i>
+    </button>
+    <button
+      type="button"
+      class="avatar"
+      aria-label="Account menu"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="menu.toggle($event)"
+    >
+      {{ initials() }}
+    </button>
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      styleClass="app-avatar-menu"
+      (onShow)="menuOpen.set(true)"
+      (onHide)="menuOpen.set(false)"
+    />
+  </div>
+</header>
+
+<div class="body" [class.desktop]="isDesktop()">
+  <nav aria-label="Primary" class="nav glass" [class.rail]="isDesktop()" [class.tabbar]="!isDesktop()">
+    @for (item of navItems; track item.path) {
+      <a class="nav-item" [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <span class="pill"><i [class]="item.icon" aria-hidden="true"></i></span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
+
+<button type="button" class="fab" aria-label="New todo" (click)="newTodo()">
+  <i class="pi pi-plus" aria-hidden="true"></i>
+</button>
+
+<!-- MAR-75: the todo editor dialog plugs in here (bound to TodoEditorService.state) -->
