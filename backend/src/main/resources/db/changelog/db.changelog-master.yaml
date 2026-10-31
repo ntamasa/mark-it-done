@@ -15,3 +15,6 @@ databaseChangeLog:
 - include:
     file: "changes/005-categories.yaml"
     relativeToChangelogFile: true
+- include:
+    file: "changes/006-todos.yaml"
+    relativeToChangelogFile: true
