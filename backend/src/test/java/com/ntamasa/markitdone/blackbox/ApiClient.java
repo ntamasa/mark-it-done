@@ -124,6 +124,23 @@ final class ApiClient {
 				.build());
 	}
 
+	/** DELETE without a body and without any CSRF header. Useful for asserting CSRF rejection. */
+	HttpResponse<String> delete(String path, Cookie... cookies) throws Exception {
+		return send(builder(path, cookies).DELETE().build());
+	}
+
+	/** DELETE without a body, with a freshly fetched CSRF cookie and matching X-XSRF-TOKEN header. */
+	HttpResponse<String> deleteWithCsrf(String path, Cookie... extraCookies) throws Exception {
+		Cookie csrf = fetchCsrfCookie();
+		Cookie[] all = new Cookie[extraCookies.length + 1];
+		all[0] = csrf;
+		System.arraycopy(extraCookies, 0, all, 1, extraCookies.length);
+		return send(builder(path, all)
+				.header(CSRF_HEADER, csrf.value())
+				.DELETE()
+				.build());
+	}
+
 	/** GET with the given cookies, asserting the response is 200 with a JSON body. Returns the parsed body. */
 	JsonNode getJsonOk(String path, Cookie... cookies) throws Exception {
 		HttpResponse<String> response = get(path, cookies);
