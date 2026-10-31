@@ -134,6 +134,31 @@ public class Todo {
     this.doneAt = done ? Instant.now() : null;
   }
 
+  /**
+   * Replaces the editable fields of the todo. The done state is not touched.
+   *
+   * @param name the name
+   * @param description the description, or null
+   * @param dueDate the due date
+   * @param dueTime the due time, or null for an all-day todo
+   * @param priority the priority
+   * @param categoryId the category id, or null
+   */
+  public void update(
+      String name,
+      String description,
+      LocalDate dueDate,
+      LocalTime dueTime,
+      Priority priority,
+      UUID categoryId) {
+    this.name = name;
+    this.description = description;
+    this.dueDate = dueDate;
+    this.dueTime = dueTime;
+    this.priority = priority;
+    this.categoryId = categoryId;
+  }
+
   // Getters
   public UUID getId() {
     return id;
