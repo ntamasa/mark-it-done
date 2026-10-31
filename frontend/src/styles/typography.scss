@@ -7,6 +7,23 @@
 // inherit from the body as well (Aura typography.fontFamily is "inherit").
 // ============================================================================
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  min-height: 100dvh;
+  color: var(--color-foreground);
+  background: var(--color-background);
+}
+
 html,
 body {
   font-family: var(--font-sans);
