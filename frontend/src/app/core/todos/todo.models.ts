@@ -31,6 +31,10 @@ export interface TodoRequest {
   categoryId?: string | null;
 }
 
+export interface DoneRequest {
+  done: boolean;
+}
+
 export type TagSeverity = 'danger' | 'warn' | 'info' | 'secondary';
 
 export const PRIORITY_LABEL: Record<Priority, string> = {
