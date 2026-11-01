@@ -1,5 +1,6 @@
 package com.ntamasa.markitdone.todo;
 
+import com.ntamasa.markitdone.recurrence.RecurrenceSeries;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -60,6 +61,15 @@ public class Todo {
   @Column(name = "done_at")
   private Instant doneAt;
 
+  @Column(name = "series_id")
+  private UUID seriesId;
+
+  @Column(name = "occurrence_date")
+  private LocalDate occurrenceDate;
+
+  @Column(name = "detached", nullable = false)
+  private boolean detached;
+
   @Column(name = "created_at", nullable = false)
   @CreationTimestamp
   private Instant createdAt;
@@ -98,6 +108,30 @@ public class Todo {
     this.priority = priority;
     this.categoryId = categoryId;
     this.done = false;
+  }
+
+  /**
+   * Creates the occurrence of a series on a date, copying the series template. The due date is the
+   * occurrence date and the todo is not detached.
+   *
+   * @param series the series
+   * @param date the occurrence (slot) date
+   * @return a new, not yet saved todo
+   */
+  public static Todo occurrenceOf(RecurrenceSeries series, LocalDate date) {
+    Todo todo =
+        new Todo(
+            series.getUserId(),
+            series.getName(),
+            series.getDescription(),
+            date,
+            series.getDueTime(),
+            series.getPriority(),
+            series.getCategoryId());
+    todo.seriesId = series.getId();
+    todo.occurrenceDate = date;
+    todo.detached = false;
+    return todo;
   }
 
   /**
@@ -198,6 +232,22 @@ public class Todo {
 
   public Instant getDoneAt() {
     return doneAt;
+  }
+
+  public UUID getSeriesId() {
+    return seriesId;
+  }
+
+  public LocalDate getOccurrenceDate() {
+    return occurrenceDate;
+  }
+
+  public boolean isDetached() {
+    return detached;
+  }
+
+  public void setDetached(boolean detached) {
+    this.detached = detached;
   }
 
   public Instant getCreatedAt() {
