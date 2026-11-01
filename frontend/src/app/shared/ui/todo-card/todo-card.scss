@@ -1,0 +1,182 @@
+:host {
+  display: block;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 4px 4px 4px 4px;
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.card.overdue {
+  border-left: 3px solid var(--color-destructive);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.check {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-muted-foreground);
+  border-radius: 6px;
+  transition:
+    background-color var(--motion-base) ease-out,
+    border-color var(--motion-base) ease-out;
+
+  .pi {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-on-primary);
+  }
+}
+
+.overdue .box {
+  border-color: var(--color-destructive);
+}
+
+.box.checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity var(--motion-base) ease-out;
+}
+
+.done .content {
+  opacity: 0.72;
+}
+
+.title {
+  align-self: flex-start;
+  max-width: 100%;
+  min-height: 24px;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: line-through transparent;
+  transition:
+    color var(--motion-base) ease-out,
+    text-decoration-color var(--motion-base) ease-out;
+}
+
+.compact .title {
+  font-size: 14px;
+}
+
+.done .title {
+  text-decoration-color: currentcolor;
+  color: var(--color-muted-foreground);
+}
+
+.desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted-foreground);
+
+  .pi {
+    font-size: 13px;
+  }
+}
+
+.compact .meta {
+  font-size: 12px;
+}
+
+.meta-overdue {
+  color: var(--color-destructive);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.more {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted-foreground);
+
+  .pi {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: var(--color-muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box,
+  .content,
+  .title {
+    transition: none;
+  }
+}

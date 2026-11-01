@@ -1,0 +1,29 @@
+// Todo card overflow menu (rendered in the body, so it is styled globally)
+.p-menu.todo-card-menu {
+  min-width: 180px;
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+
+  .p-menu-item-link {
+    min-height: 44px;
+    color: var(--color-card-foreground);
+  }
+
+  .p-menu-item-icon,
+  .p-menu-item-label {
+    color: inherit;
+  }
+
+  .p-menu-item-link:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+
+  .menu-destructive .p-menu-item-label,
+  .menu-destructive .p-menu-item-icon {
+    color: var(--color-destructive);
+  }
+}
