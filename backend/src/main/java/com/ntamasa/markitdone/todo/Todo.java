@@ -250,6 +250,20 @@ public class Todo {
     this.detached = detached;
   }
 
+  /**
+   * Attaches the todo to a series as its row for a date. The todo keeps its other fields, including
+   * its done state.
+   *
+   * @param seriesId the series
+   * @param occurrenceDate the occurrence date of the row
+   * @param detached true if the date is not a slot of the series rule
+   */
+  public void attachToSeries(UUID seriesId, LocalDate occurrenceDate, boolean detached) {
+    this.seriesId = seriesId;
+    this.occurrenceDate = occurrenceDate;
+    this.detached = detached;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }

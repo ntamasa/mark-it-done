@@ -2,6 +2,9 @@ package com.ntamasa.markitdone.todo;
 
 import com.ntamasa.markitdone.auth.CurrentUser;
 import com.ntamasa.markitdone.recurrence.SeriesEditService;
+import com.ntamasa.markitdone.recurrence.SeriesService;
+import com.ntamasa.markitdone.recurrence.dto.RuleRequest;
+import com.ntamasa.markitdone.recurrence.dto.SeriesDto;
 import com.ntamasa.markitdone.todo.dto.DoneRequest;
 import com.ntamasa.markitdone.todo.dto.TodoDto;
 import com.ntamasa.markitdone.todo.dto.TodoRequest;
@@ -31,16 +34,20 @@ public class TodoController {
 
   private final TodoService todoService;
   private final SeriesEditService seriesEditService;
+  private final SeriesService seriesService;
 
   /**
    * Create a TodoController.
    *
    * @param todoService the todo service
    * @param seriesEditService the service that edits occurrences of recurring todos
+   * @param seriesService the series service, used to turn a one-off todo into a series
    */
-  public TodoController(TodoService todoService, SeriesEditService seriesEditService) {
+  public TodoController(
+      TodoService todoService, SeriesEditService seriesEditService, SeriesService seriesService) {
     this.todoService = todoService;
     this.seriesEditService = seriesEditService;
+    this.seriesService = seriesService;
   }
 
   /**
@@ -107,6 +114,21 @@ public class TodoController {
   @PatchMapping("/{id}/done")
   public TodoDto setDone(@PathVariable UUID id, @Valid @RequestBody DoneRequest req) {
     return todoService.setDone(CurrentUser.id(), id, req.done());
+  }
+
+  /**
+   * Turns a one-off todo of the current user into a recurring series. The todo becomes the
+   * occurrence on its own date, or a detached member when its date is not a slot of the rule, and
+   * the rest of the series is generated up to the horizon.
+   *
+   * @param id the todo id
+   * @param rule the recurrence rule of the new series
+   * @return the created series
+   */
+  @PostMapping("/{id}/recurrence")
+  @ResponseStatus(HttpStatus.CREATED)
+  public SeriesDto convertToSeries(@PathVariable UUID id, @RequestBody RuleRequest rule) {
+    return seriesService.convertTodo(CurrentUser.id(), id, rule);
   }
 
   /**

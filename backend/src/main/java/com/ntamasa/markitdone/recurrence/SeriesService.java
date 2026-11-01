@@ -5,8 +5,10 @@ import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.category.CategoryService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.recurrence.dto.RuleRequest;
 import com.ntamasa.markitdone.recurrence.dto.SeriesDto;
 import com.ntamasa.markitdone.recurrence.dto.SeriesRequest;
+import com.ntamasa.markitdone.todo.Todo;
 import com.ntamasa.markitdone.todo.TodoRepository;
 import com.ntamasa.markitdone.user.UserRepository;
 import java.time.Clock;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SeriesService {
 
   private static final String ENTITY_TYPE = "RecurrenceSeries";
+  private static final String TODO_ENTITY_TYPE = "Todo";
   private static final int MAX_NAME_LENGTH = 200;
   private static final int MAX_DESCRIPTION_LENGTH = 2000;
 
@@ -93,6 +96,65 @@ public class SeriesService {
     seriesRepository.flush();
     auditService.record(
         AuditAction.SERIES_CREATED, userId, ENTITY_TYPE, series.getId(), null, snapshot(series));
+    return SeriesQueries.toDto(series);
+  }
+
+  /**
+   * Turns a one-off todo of the user into the first member of a new series, in one transaction. The
+   * series is created from the todo's name, description, time, priority and category. The todo is
+   * attached as its row on its own date, and it is detached when that date is not a slot of the
+   * rule. Its done state is kept. The rest of the series is materialised up to the horizon,
+   * skipping the todo's date. Records a SERIES_CREATED and a TODO_UPDATED audit entry.
+   *
+   * @param userId the owner
+   * @param todoId the todo
+   * @param ruleRequest the recurrence rule of the new series
+   * @return the created series
+   * @throws ApiException NOT_FOUND when the todo is not the user's, BAD_REQUEST when the todo is
+   *     already recurring, VALIDATION_FAILED for an invalid rule or a rule that starts before the
+   *     todo's date
+   */
+  @Transactional
+  public SeriesDto convertTodo(UUID userId, UUID todoId, RuleRequest ruleRequest) {
+    Todo todo =
+        todoRepository
+            .findByIdAndUserId(todoId, userId)
+            .orElseThrow(() -> ApiException.notFound("Todo"));
+    if (todo.getSeriesId() != null) {
+      throw new ApiException(ErrorCode.BAD_REQUEST, "This todo is already recurring");
+    }
+    if (ruleRequest == null) {
+      throw new ApiException(ErrorCode.VALIDATION_FAILED, "rule is required");
+    }
+    RecurrenceRule rule = ruleRequest.toRule();
+    RecurrenceRules.validate(rule);
+    LocalDate todoDate = todo.getDueDate();
+    if (rule.startDate().isBefore(todoDate)) {
+      throw new ApiException(
+          ErrorCode.VALIDATION_FAILED, "Start date cannot be before the todo's date");
+    }
+    ZoneId zone =
+        userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User")).zone();
+    Map<String, Object> todoBefore = todoSnapshot(todo);
+    RecurrenceSeries series =
+        seriesRepository.saveAndFlush(
+            RecurrenceSeries.fromTemplate(
+                userId,
+                todo.getName(),
+                todo.getDescription(),
+                todo.getDueTime(),
+                todo.getPriority(),
+                todo.getCategoryId(),
+                rule));
+    boolean onSlot = RecurrenceCalculator.slots(rule, todoDate, todoDate).contains(todoDate);
+    todo.attachToSeries(series.getId(), todoDate, !onSlot);
+    todoRepository.saveAndFlush(todo);
+    materializationService.materialize(series, materializationService.horizon(zone));
+    seriesRepository.flush();
+    auditService.record(
+        AuditAction.SERIES_CREATED, userId, ENTITY_TYPE, series.getId(), null, snapshot(series));
+    auditService.record(
+        AuditAction.TODO_UPDATED, userId, TODO_ENTITY_TYPE, todoId, todoBefore, todoSnapshot(todo));
     return SeriesQueries.toDto(series);
   }
 
@@ -185,6 +247,23 @@ public class SeriesService {
           ErrorCode.VALIDATION_FAILED, "Description must be at most 2000 characters.");
     }
     return raw;
+  }
+
+  private static Map<String, Object> todoSnapshot(Todo todo) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("name", todo.getName());
+    map.put("description", todo.getDescription());
+    map.put("dueDate", todo.getDueDate().toString());
+    map.put("dueTime", todo.getDueTime() == null ? null : todo.getDueTime().toString());
+    map.put("priority", todo.getPriority().name());
+    map.put("categoryId", todo.getCategoryId() == null ? null : todo.getCategoryId().toString());
+    map.put("done", todo.isDone());
+    map.put("seriesId", todo.getSeriesId() == null ? null : todo.getSeriesId().toString());
+    map.put(
+        "occurrenceDate",
+        todo.getOccurrenceDate() == null ? null : todo.getOccurrenceDate().toString());
+    map.put("detached", todo.isDetached());
+    return map;
   }
 
   private static Map<String, Object> snapshot(RecurrenceSeries series) {
