@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -11,6 +12,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -32,6 +34,32 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail detail = ProblemDetail.forStatusAndDetail(code.getStatus(), ex.getMessage());
     detail.setProperty("code", code.name());
     return ResponseEntity.status(code.getStatus()).body(detail);
+  }
+
+  /** Handle a missing required request parameter by returning a 400 BAD_REQUEST. */
+  @Override
+  protected ResponseEntity<Object> handleMissingServletRequestParameter(
+      MissingServletRequestParameterException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    return badRequest("Missing request parameter");
+  }
+
+  /**
+   * Handle a request parameter that cannot be converted, such as a malformed date, by returning a
+   * 400 BAD_REQUEST.
+   */
+  @Override
+  protected ResponseEntity<Object> handleTypeMismatch(
+      TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    return badRequest("Invalid request parameter");
+  }
+
+  private static ResponseEntity<Object> badRequest(String message) {
+    ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+    detail.setProperty("code", ErrorCode.BAD_REQUEST.name());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
   }
 
   /** Handle unexpected exceptions by returning a generic 500 error and logging the stack trace. */

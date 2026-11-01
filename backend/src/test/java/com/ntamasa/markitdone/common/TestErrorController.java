@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Test-only controller for testing error handling in @WebMvcTest. */
@@ -23,6 +24,18 @@ public class TestErrorController {
   @GetMapping("/unexpected-exception")
   public void throwUnexpectedException() {
     throw new RuntimeException("Something went wrong");
+  }
+
+  /** Endpoint with a required request parameter. */
+  @GetMapping("/param")
+  public void requiredParam(@RequestParam String q) {
+    // Do nothing, the parameter must be present
+  }
+
+  /** Endpoint with an int request parameter. */
+  @GetMapping("/number")
+  public void numberParam(@RequestParam int n) {
+    // Do nothing, the parameter must be an int
   }
 
   /** Endpoint that validates a request body. */
