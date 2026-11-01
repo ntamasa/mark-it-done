@@ -21,3 +21,19 @@
     -webkit-backdrop-filter: none;
   }
 }
+
+// Toasts sit 8px below the top bar (64px desktop, 56px mobile) and at the top centre on mobile, so they never cover the
+// FAB or the tab bar. PrimeNG writes an inline top/right on the container, hence !important.
+.p-toast.p-toast-top-right {
+  top: 72px !important;
+  right: var(--space-md) !important;
+
+  @media (max-width: 1023.98px) {
+    top: 64px !important;
+    right: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    width: calc(100vw - 32px);
+    max-width: 24rem;
+  }
+}

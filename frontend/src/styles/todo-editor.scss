@@ -1,0 +1,234 @@
+// Todo editor surface (PrimeNG drawer, select, datepicker, toggleswitch). PrimeNG renders these outside the
+// component, and defaults to zinc colours, so map them to our tokens here.
+
+.todo-editor-drawer,
+.md-overlay {
+  --p-drawer-background: var(--color-card);
+  --p-drawer-color: var(--color-card-foreground);
+  --p-drawer-border-color: var(--color-border-subtle);
+
+  --p-inputtext-background: var(--color-card);
+  --p-inputtext-color: var(--color-card-foreground);
+  --p-inputtext-border-color: var(--color-border-subtle);
+  --p-inputtext-hover-border-color: var(--color-border);
+  --p-inputtext-focus-border-color: var(--color-ring);
+  --p-inputtext-placeholder-color: var(--color-muted-foreground);
+  --p-inputtext-shadow: var(--shadow-sm);
+
+  --p-select-background: var(--color-card);
+  --p-select-color: var(--color-card-foreground);
+  --p-select-border-color: var(--color-border-subtle);
+  --p-select-hover-border-color: var(--color-border);
+  --p-select-focus-border-color: var(--color-ring);
+  --p-select-placeholder-color: var(--color-muted-foreground);
+  --p-select-dropdown-color: var(--color-muted-foreground);
+  --p-select-shadow: var(--shadow-sm);
+  --p-select-overlay-background: var(--color-card);
+  --p-select-overlay-border-color: var(--color-border-subtle);
+  --p-select-overlay-color: var(--color-card-foreground);
+  --p-select-overlay-shadow: var(--shadow-lg);
+  --p-select-option-color: var(--color-card-foreground);
+  --p-select-option-focus-background: var(--color-muted);
+  --p-select-option-focus-color: var(--color-foreground);
+  --p-select-option-selected-background: var(--color-muted);
+  --p-select-option-selected-color: var(--color-primary-strong);
+  --p-select-option-selected-focus-background: var(--color-muted);
+  --p-select-option-selected-focus-color: var(--color-primary-strong);
+
+  --p-datepicker-background: var(--color-card);
+  --p-datepicker-dropdown-background: var(--color-card);
+  --p-datepicker-dropdown-color: var(--color-muted-foreground);
+  --p-datepicker-input-icon-color: var(--color-muted-foreground);
+  --p-datepicker-panel-background: var(--color-card);
+  --p-datepicker-panel-color: var(--color-card-foreground);
+  --p-datepicker-panel-border-color: var(--color-border-subtle);
+  --p-datepicker-panel-shadow: var(--shadow-lg);
+  --p-datepicker-header-background: var(--color-card);
+  --p-datepicker-header-color: var(--color-card-foreground);
+  --p-datepicker-header-border-color: var(--color-border-subtle);
+  --p-datepicker-title-color: var(--color-card-foreground);
+  --p-datepicker-select-month-color: var(--color-card-foreground);
+  --p-datepicker-select-month-hover-color: var(--color-primary-strong);
+  --p-datepicker-select-year-color: var(--color-card-foreground);
+  --p-datepicker-select-year-hover-color: var(--color-primary-strong);
+  --p-datepicker-week-day-color: var(--color-muted-foreground);
+  --p-datepicker-date-color: var(--color-card-foreground);
+  --p-datepicker-date-hover-background: var(--color-muted);
+  --p-datepicker-date-selected-background: var(--color-primary);
+  --p-datepicker-date-selected-color: var(--color-on-primary);
+  --p-datepicker-date-range-selected-background: var(--color-muted);
+  --p-datepicker-date-range-selected-color: var(--color-card-foreground);
+  --p-datepicker-month-color: var(--color-card-foreground);
+  --p-datepicker-month-hover-background: var(--color-muted);
+  --p-datepicker-month-selected-background: var(--color-primary);
+  --p-datepicker-month-selected-color: var(--color-on-primary);
+  --p-datepicker-year-color: var(--color-card-foreground);
+  --p-datepicker-year-hover-background: var(--color-muted);
+  --p-datepicker-year-selected-background: var(--color-primary);
+  --p-datepicker-year-selected-color: var(--color-on-primary);
+  --p-datepicker-today-background: var(--color-muted);
+  --p-datepicker-today-color: var(--color-primary-strong);
+  --p-datepicker-buttonbar-border-color: var(--color-border-subtle);
+  --p-datepicker-time-picker-border-color: var(--color-border-subtle);
+  --p-datepicker-time-picker-button-color: var(--color-card-foreground);
+  --p-datepicker-time-picker-button-hover-color: var(--color-primary-strong);
+  --p-datepicker-time-picker-button-hover-background: var(--color-muted);
+
+  --p-inputtext-disabled-background: var(--color-card);
+  --p-inputtext-disabled-color: var(--color-muted-foreground);
+  --p-select-disabled-background: var(--color-card);
+  --p-select-disabled-color: var(--color-muted-foreground);
+  --p-datepicker-disabled-background: var(--color-card);
+  --p-datepicker-disabled-color: var(--color-muted-foreground);
+
+  --p-toggleswitch-background: var(--color-muted-foreground);
+  --p-toggleswitch-hover-background: var(--color-muted-foreground);
+  --p-toggleswitch-checked-background: var(--color-primary-strong);
+  --p-toggleswitch-checked-hover-background: var(--color-primary-strong);
+  --p-toggleswitch-border-color: transparent;
+  --p-toggleswitch-handle-background: #ffffff;
+  --p-toggleswitch-handle-hover-background: #ffffff;
+  --p-toggleswitch-handle-checked-background: #ffffff;
+  --p-toggleswitch-handle-checked-hover-background: #ffffff;
+}
+
+.p-drawer.todo-editor-drawer {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+
+  &.p-drawer-right {
+    width: 480px;
+    max-width: 100%;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  }
+
+  &.p-drawer-bottom {
+    width: 100%;
+    height: calc(100dvh - 24px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .p-select,
+  .p-datepicker {
+    min-height: 44px;
+  }
+
+  .p-select-label,
+  .p-datepicker-input,
+  .p-textarea {
+    font-family: inherit;
+    font-size: 16px;
+  }
+
+  .p-select-label {
+    display: flex;
+    align-items: center;
+  }
+
+  .p-datepicker-input,
+  .p-datepicker-input-icon-container {
+    min-height: 44px;
+  }
+
+  .p-datepicker-input-icon-container {
+    color: var(--color-muted-foreground);
+  }
+
+  .p-toggleswitch {
+    flex: none;
+    // The visual track stays compact; the padding makes the hit area 48x44 (36x22 track).
+    box-sizing: content-box;
+    padding: 11px 6px;
+    margin: 0;
+  }
+
+  .p-textarea:focus-visible,
+  .p-textarea:focus {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  .p-datepicker-input:disabled,
+  .p-inputtext:disabled {
+    background: var(--color-card);
+    color: var(--color-muted-foreground);
+    opacity: 0.55;
+  }
+
+  .p-toggleswitch-input:focus-visible + .p-toggleswitch-slider {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  .p-select:not(.p-disabled).p-focus,
+  .p-datepicker:focus-within .p-datepicker-input {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  .p-button {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 2px;
+      box-shadow: none;
+    }
+  }
+
+  .p-button.p-button-text:not(.p-button-danger) {
+    color: var(--color-primary-strong);
+  }
+
+  .p-button.btn-accent {
+    padding: 0 22px;
+  }
+
+  .p-button-icon,
+  .p-datepicker-dropdown-icon,
+  .p-select-dropdown-icon {
+    font-size: 16px;
+  }
+}
+
+.md-overlay {
+  font-family: inherit;
+
+  // 44px select options.
+  .p-select-option {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  // Calendar days as large as the panel allows (at least 40px).
+  .p-datepicker-day-cell {
+    padding: 2px;
+  }
+
+  .p-datepicker-day {
+    width: 40px;
+    height: 40px;
+  }
+
+  .p-datepicker-calendar-container th {
+    min-width: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-drawer.todo-editor-drawer {
+    animation-duration: 0ms !important;
+  }
+}

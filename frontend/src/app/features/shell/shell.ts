@@ -11,6 +11,7 @@ import { CategoryStore } from '../../core/categories/category.store';
 import { todayIso } from '../../core/dates/dates';
 import { ThemeService } from '../../core/theme/theme.service';
 import { PagerComponent } from '../../shared/ui/pager/pager';
+import { TodoEditor } from '../todo-editor/todo-editor';
 import { TodoEditorService } from '../todo-editor/todo-editor.service';
 import { ShellHeader } from './shell-header';
 
@@ -49,7 +50,7 @@ export function initialsOf(name: string | null | undefined): string {
 @Component({
   selector: 'app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MenuModule, PagerComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MenuModule, PagerComponent, TodoEditor],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

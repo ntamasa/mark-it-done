@@ -7,12 +7,16 @@ import { CategoryStore } from '../../core/categories/category.store';
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../../core/auth/auth.models';
 import { ThemeService } from '../../core/theme/theme.service';
+import { TodoEditor } from '../todo-editor/todo-editor';
 import { TodoEditorService } from '../todo-editor/todo-editor.service';
 import { initialsOf, Shell } from './shell';
 import { ShellHeader } from './shell-header';
 
 @Component({ template: '' })
 class Dummy {}
+
+@Component({ selector: 'app-todo-editor', template: '' })
+class EditorStub {}
 
 describe('Shell', () => {
   const user: User = {
@@ -52,6 +56,7 @@ describe('Shell', () => {
         { provide: BreakpointObserver, useValue: { observe: () => desktop$ } },
       ],
     });
+    TestBed.overrideComponent(Shell, { remove: { imports: [TodoEditor] }, add: { imports: [EditorStub] } });
     const fixture = TestBed.createComponent(Shell);
     await TestBed.inject(Router).navigateByUrl('/two-days');
     fixture.detectChanges();

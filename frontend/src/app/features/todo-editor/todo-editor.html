@@ -1,0 +1,165 @@
+<p-drawer
+  [visible]="open()"
+  [position]="isDesktop() ? 'right' : 'bottom'"
+  [modal]="true"
+  [dismissible]="false"
+  [closeOnEscape]="false"
+  [showCloseIcon]="false"
+  styleClass="todo-editor-drawer"
+  (onShow)="onShow()"
+>
+  <ng-template #headless>
+    <!-- Escape bubbles up from whichever field has focus; the wrapper only listens. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+    <div class="editor" (keydown.escape)="onEscape($event)">
+      <header class="editor-header" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+        @if (!isDesktop()) {
+          <span class="drag-handle" aria-hidden="true"></span>
+        }
+        <div class="header-row">
+          <h2 id="todo-editor-title" class="editor-title">{{ title() }}</h2>
+          <button type="button" class="close-btn" aria-label="Close" (click)="requestClose()">
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <form class="editor-form" novalidate (submit)="onSubmit($event)">
+        <div class="editor-body">
+          <div class="field">
+            <label for="todo-name">Name *</label>
+            <input
+              id="todo-name"
+              type="text"
+              autocomplete="off"
+              placeholder="What needs doing?"
+              aria-required="true"
+              [formField]="todoForm.name"
+              [attr.aria-invalid]="errorOf(todoForm.name) ? 'true' : null"
+              [attr.aria-describedby]="errorOf(todoForm.name) ? 'todo-name-error' : null"
+            />
+            @if (errorOf(todoForm.name); as msg) {
+              <p class="field-error" id="todo-name-error" role="alert">{{ msg }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="todo-description">Description</label>
+            <textarea
+              id="todo-description"
+              pTextarea
+              [autoResize]="true"
+              rows="3"
+              placeholder="Optional details"
+              [formField]="todoForm.description"
+              [attr.aria-invalid]="errorOf(todoForm.description) ? 'true' : null"
+              [attr.aria-describedby]="errorOf(todoForm.description) ? 'todo-description-error' : null"
+            ></textarea>
+            @if (errorOf(todoForm.description); as msg) {
+              <p class="field-error" id="todo-description-error" role="alert">{{ msg }}</p>
+            }
+          </div>
+
+          <div class="row stack-mobile">
+            <div class="field">
+              <label id="todo-date-label" for="todo-date">Expiration date *</label>
+              <p-datepicker
+                inputId="todo-date"
+                [formField]="todoForm.dueDate"
+                [showIcon]="true"
+                iconDisplay="input"
+                dateFormat="D, M d, yy"
+                appendTo="body"
+                panelStyleClass="md-overlay"
+                [fluid]="true"
+                [required]="true"
+                [invalid]="!!errorOf(todoForm.dueDate)"
+                [attr.aria-describedby]="errorOf(todoForm.dueDate) ? 'todo-date-error' : null"
+              />
+              @if (errorOf(todoForm.dueDate); as msg) {
+                <p class="field-error" id="todo-date-error" role="alert">{{ msg }}</p>
+              }
+            </div>
+
+            <div class="time-field">
+              <label id="todo-time-label" class="time-label" for="todo-time">Time</label>
+              <p-toggleswitch
+                class="time-switch"
+                ariaLabel="Add time"
+                [formField]="todoForm.withTime"
+                (onChange)="onTimeToggle($event.checked)"
+              />
+              <p-datepicker
+                class="time-input"
+                inputId="todo-time"
+                [formField]="todoForm.time"
+                [timeOnly]="true"
+                hourFormat="24"
+                appendTo="body"
+                panelStyleClass="md-overlay"
+                [fluid]="true"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label id="todo-priority-label" for="todo-priority">Priority</label>
+              <p-select
+                inputId="todo-priority"
+                ariaLabelledBy="todo-priority-label"
+                [formField]="todoForm.priority"
+                [options]="priorityOptions"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                panelStyleClass="md-overlay"
+                [fluid]="true"
+              />
+            </div>
+
+            <div class="field">
+              <label id="todo-category-label" for="todo-category">Category</label>
+              <p-select
+                inputId="todo-category"
+                ariaLabelledBy="todo-category-label"
+                [formField]="todoForm.categoryId"
+                [options]="categoryOptions()"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                panelStyleClass="md-overlay"
+                [fluid]="true"
+              />
+              <a class="manage-link" href="/categories" (click)="manageCategories($event)">Manage categories</a>
+            </div>
+          </div>
+
+          <!-- MAR-81: the Repeat section is projected here via <section repeat> -->
+          <ng-content select="[repeat]" />
+        </div>
+
+        <footer class="editor-footer">
+          @if (isEdit()) {
+            <p-button
+              type="button"
+              label="Delete"
+              [text]="true"
+              severity="danger"
+              styleClass="footer-btn"
+              (onClick)="onDelete()"
+            />
+          }
+          <span class="spacer"></span>
+          <p-button type="button" label="Cancel" [text]="true" styleClass="footer-btn" (onClick)="requestClose()" />
+          <p-button
+            type="submit"
+            styleClass="btn-accent footer-btn"
+            [label]="saving() ? 'Saving…' : 'Save'"
+            [loading]="saving()"
+          />
+        </footer>
+      </form>
+    </div>
+  </ng-template>
+</p-drawer>
