@@ -270,7 +270,7 @@ Breakpoints: **base 0–767** (mobile), **md ≥768** (tablet), **lg ≥1024** (
 | Chip | custom `app-category-chip` | Swatch colours from §2.3 |
 | Dialog | `p-dialog [modal]` | Glass |
 | Confirm | `p-confirmdialog` | All deletes and cancellations **[Decision]** |
-| Toast | `p-toast position="top-center"` (mobile) / `"bottom-right"` (desktop) | Auto-dismiss after 4s, `aria-live="polite"` |
+| Toast | `p-toast position="top-right"`, below the top bar on desktop and centred at the top on mobile (bottom-right collided with the FAB) | Auto-dismiss after 4s, `aria-live="polite"` |
 | Table/list | `p-table` (≥768) / stacked list (mobile) | Recurring list, category-delete dialog |
 | Skeleton | `p-skeleton` | Loading states longer than 300ms |
 | Menu | `p-menu [popup]` | Avatar menu, card overflow menu |

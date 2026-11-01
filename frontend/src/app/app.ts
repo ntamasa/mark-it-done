@@ -9,7 +9,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   template: `
     <div class="app-backdrop" aria-hidden="true"></div>
     <router-outlet></router-outlet>
-    <p-toast position="bottom-right" styleClass="app-toast-container"></p-toast>
+    <p-toast position="top-right" styleClass="app-toast-container"></p-toast>
     <p-confirmdialog styleClass="app-confirm-dialog"></p-confirmdialog>
   `,
   styleUrl: './app.scss',

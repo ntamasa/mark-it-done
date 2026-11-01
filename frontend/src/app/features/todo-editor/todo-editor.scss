@@ -1,0 +1,221 @@
+:host {
+  display: contents;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-header {
+  flex: none;
+  padding: 0 var(--space-sm) 0 var(--space-md);
+  background: var(--glass-fill);
+  border-bottom: 1px solid var(--color-border-subtle);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.drag-handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 8px auto 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-muted-foreground);
+  opacity: 0.5;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: var(--space-sm) 0;
+}
+
+.editor-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+
+  @media (min-width: 1024px) {
+    font-size: 20px;
+    line-height: 28px;
+  }
+}
+
+.close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+
+  i {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: var(--color-muted);
+  }
+}
+
+.editor-form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-height: 0;
+  padding: 20px var(--space-md);
+  overflow-y: auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  // Date and time stack on mobile; priority and category stay side by side.
+  &.stack-mobile {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-md);
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+}
+
+// Mobile: [switch] Time [input] on one line. Desktop: "Time" label above [switch] [input].
+.time-field {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas: 'sw lbl inp';
+  align-items: center;
+  column-gap: var(--space-sm);
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'lbl lbl'
+      'sw inp';
+    row-gap: 6px;
+  }
+
+  .time-label {
+    grid-area: lbl;
+    font-size: 15px;
+
+    @media (min-width: 1024px) {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 16px;
+      letter-spacing: 0.01em;
+    }
+  }
+
+  .time-switch {
+    grid-area: sw;
+  }
+
+  .time-input {
+    grid-area: inp;
+    min-width: 0;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  label {
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+    box-shadow: var(--shadow-sm);
+    font: inherit;
+    font-size: 16px;
+    line-height: 24px;
+    transition: border-color var(--motion-fast) ease-out;
+  }
+
+  input {
+    min-height: 44px;
+    padding: 0 var(--space-md);
+  }
+
+  textarea {
+    padding: 10px var(--space-md);
+    resize: vertical;
+  }
+
+  input[aria-invalid='true'],
+  textarea[aria-invalid='true'] {
+    border-color: var(--color-destructive);
+  }
+}
+
+.field-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-destructive);
+}
+
+.manage-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary-strong);
+  text-decoration: underline;
+}
+
+.editor-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 12px var(--space-md);
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-card);
+}
+
+.spacer {
+  flex: 1;
+}
