@@ -7,6 +7,9 @@ import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
 import com.ntamasa.markitdone.recurrence.RecurrenceSeries;
 import com.ntamasa.markitdone.recurrence.RecurrenceSeriesRepository;
+import com.ntamasa.markitdone.recurrence.SeriesExclusion;
+import com.ntamasa.markitdone.recurrence.SeriesExclusionId;
+import com.ntamasa.markitdone.recurrence.SeriesExclusionRepository;
 import com.ntamasa.markitdone.todo.dto.TodoDto;
 import com.ntamasa.markitdone.todo.dto.TodoRequest;
 import com.ntamasa.markitdone.user.UserRepository;
@@ -39,6 +42,7 @@ public class TodoService {
   private final UserRepository userRepository;
   private final AuditService auditService;
   private final RecurrenceSeriesRepository seriesRepository;
+  private final SeriesExclusionRepository exclusionRepository;
 
   /**
    * Create a TodoService.
@@ -48,18 +52,22 @@ public class TodoService {
    * @param userRepository the user repository, used to find the user's time zone
    * @param auditService the audit service
    * @param seriesRepository the series repository, used to fill the series fields
+   * @param exclusionRepository the series exclusion repository, used to remember deleted
+   *     occurrences
    */
   public TodoService(
       TodoRepository todoRepository,
       CategoryService categoryService,
       UserRepository userRepository,
       AuditService auditService,
-      RecurrenceSeriesRepository seriesRepository) {
+      RecurrenceSeriesRepository seriesRepository,
+      SeriesExclusionRepository exclusionRepository) {
     this.todoRepository = todoRepository;
     this.categoryService = categoryService;
     this.userRepository = userRepository;
     this.auditService = auditService;
     this.seriesRepository = seriesRepository;
+    this.exclusionRepository = exclusionRepository;
   }
 
   /**
@@ -180,7 +188,10 @@ public class TodoService {
   }
 
   /**
-   * Deletes a todo. Records a TODO_DELETED audit entry.
+   * Deletes a todo. A one-off todo is deleted and records a TODO_DELETED audit entry. An occurrence
+   * of a series is deleted, its date is recorded as an exclusion of the series so that
+   * materialisation never recreates it (recording it again is a no-op), and the series is kept.
+   * Records an OCCURRENCE_DELETED audit entry for an occurrence.
    *
    * @param userId the owner
    * @param id the todo id
@@ -190,9 +201,25 @@ public class TodoService {
   public void delete(UUID userId, UUID id) {
     Todo todo = requireOwned(userId, id);
     Map<String, Object> before = snapshot(todo);
+    UUID seriesId = todo.getSeriesId();
+    LocalDate occurrenceDate = todo.getOccurrenceDate();
     todoRepository.delete(todo);
     todoRepository.flush();
-    auditService.record(AuditAction.TODO_DELETED, userId, ENTITY_TYPE, id, before, null);
+    if (seriesId == null) {
+      auditService.record(AuditAction.TODO_DELETED, userId, ENTITY_TYPE, id, before, null);
+      return;
+    }
+    SeriesExclusionId exclusionId = new SeriesExclusionId(seriesId, occurrenceDate);
+    if (!exclusionRepository.existsById(exclusionId)) {
+      exclusionRepository.saveAndFlush(new SeriesExclusion(seriesId, occurrenceDate));
+    }
+    auditService.record(
+        AuditAction.OCCURRENCE_DELETED,
+        userId,
+        ENTITY_TYPE,
+        id,
+        before,
+        Map.of("seriesId", seriesId.toString(), "occurrenceDate", occurrenceDate.toString()));
   }
 
   /**
