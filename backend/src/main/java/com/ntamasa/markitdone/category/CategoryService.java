@@ -4,9 +4,18 @@ import com.ntamasa.markitdone.audit.AuditAction;
 import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.recurrence.RecurrenceRules;
+import com.ntamasa.markitdone.recurrence.RecurrenceSeries;
+import com.ntamasa.markitdone.recurrence.RecurrenceSeriesRepository;
+import com.ntamasa.markitdone.todo.Todo;
+import com.ntamasa.markitdone.todo.TodoRepository;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +29,26 @@ public class CategoryService {
   private static final String NAME_TAKEN = "You already have a category with this name.";
 
   private final CategoryRepository categoryRepository;
+  private final TodoRepository todoRepository;
+  private final RecurrenceSeriesRepository seriesRepository;
   private final AuditService auditService;
 
   /**
    * Create a CategoryService.
    *
    * @param categoryRepository the category repository
+   * @param todoRepository the todo repository
+   * @param seriesRepository the recurrence series repository
    * @param auditService the audit service
    */
-  public CategoryService(CategoryRepository categoryRepository, AuditService auditService) {
+  public CategoryService(
+      CategoryRepository categoryRepository,
+      TodoRepository todoRepository,
+      RecurrenceSeriesRepository seriesRepository,
+      AuditService auditService) {
     this.categoryRepository = categoryRepository;
+    this.todoRepository = todoRepository;
+    this.seriesRepository = seriesRepository;
     this.auditService = auditService;
   }
 
@@ -41,8 +60,9 @@ public class CategoryService {
    */
   @Transactional(readOnly = true)
   public List<CategoryDto> list(UUID userId) {
+    Map<UUID, Integer> counts = itemCounts(userId);
     return categoryRepository.findByUserIdOrderByNameKeyAsc(userId).stream()
-        .map(CategoryDto::of)
+        .map(c -> CategoryDto.of(c, counts.getOrDefault(c.getId(), 0)))
         .toList();
   }
 
@@ -74,7 +94,7 @@ public class CategoryService {
         category.getId(),
         null,
         snapshot(category));
-    return CategoryDto.of(category);
+    return CategoryDto.of(category, 0);
   }
 
   /**
@@ -106,7 +126,114 @@ public class CategoryService {
     }
     auditService.record(
         AuditAction.CATEGORY_UPDATED, userId, ENTITY_TYPE, categoryId, before, snapshot(category));
-    return CategoryDto.of(category);
+    return CategoryDto.of(category, itemCounts(userId).getOrDefault(categoryId, 0));
+  }
+
+  /**
+   * Lists the one-off todos and recurring series in a category.
+   *
+   * @param userId the owner
+   * @param id the category
+   * @return the usage
+   * @throws ApiException NOT_FOUND when the category is not the user's
+   */
+  @Transactional(readOnly = true)
+  public CategoryUsageDto usage(UUID userId, UUID id) {
+    requireOwned(userId, id);
+    List<CategoryUsageDto.TodoItem> todos =
+        todoRepository.findOneOffsInCategory(userId, id).stream()
+            .map(t -> new CategoryUsageDto.TodoItem(t.getId(), t.getName(), t.getDueDate()))
+            .toList();
+    List<CategoryUsageDto.SeriesItem> series =
+        seriesRepository.findByUserIdAndCategoryIdOrderByNameAscIdAsc(userId, id).stream()
+            .map(
+                s ->
+                    new CategoryUsageDto.SeriesItem(
+                        s.getId(), s.getName(), RecurrenceRules.summary(s.rule())))
+            .toList();
+    return new CategoryUsageDto(todos, series);
+  }
+
+  /**
+   * Deletes a category after moving the assigned items. Items that are not assigned end up without
+   * a category. All assignments are validated first, so one invalid assignment changes nothing.
+   * Records a CATEGORY_DELETED audit entry with the assignments.
+   *
+   * @param userId the owner
+   * @param id the category to delete
+   * @param req where the items go
+   * @throws ApiException NOT_FOUND when the category is not the user's, VALIDATION_FAILED when an
+   *     assignment is invalid
+   */
+  @Transactional
+  public void delete(UUID userId, UUID id, DeleteCategoryRequest req) {
+    Category category = requireOwned(userId, id);
+    List<Assignment> assignments =
+        req == null || req.assignments() == null ? List.of() : req.assignments();
+    Set<UUID> todoIds =
+        todoRepository.findOneOffsInCategory(userId, id).stream()
+            .map(Todo::getId)
+            .collect(Collectors.toSet());
+    Set<UUID> seriesIds =
+        seriesRepository.findByUserIdAndCategoryIdOrderByNameAscIdAsc(userId, id).stream()
+            .map(RecurrenceSeries::getId)
+            .collect(Collectors.toSet());
+    Set<UUID> validTargets = new HashSet<>();
+    for (Assignment a : assignments) {
+      if (a == null || a.kind() == null || a.id() == null) {
+        throw invalid("Every assignment needs a kind and an id.");
+      }
+      boolean inCategory =
+          a.kind() == Kind.TODO ? todoIds.contains(a.id()) : seriesIds.contains(a.id());
+      if (!inCategory) {
+        throw invalid("An assigned item is not in this category.");
+      }
+      UUID target = a.categoryId();
+      if (target == null || validTargets.contains(target)) {
+        continue;
+      }
+      if (target.equals(id)) {
+        throw invalid("An item cannot be moved to the category being deleted.");
+      }
+      if (categoryRepository.findByIdAndUserId(target, userId).isEmpty()) {
+        throw invalid("An assignment points to an unknown category.");
+      }
+      validTargets.add(target);
+    }
+
+    Map<String, Object> before = snapshot(category);
+    for (Assignment a : assignments) {
+      if (a.kind() == Kind.TODO) {
+        todoRepository.updateCategory(a.id(), a.categoryId());
+      } else {
+        seriesRepository.updateCategory(a.id(), a.categoryId());
+        todoRepository.updateCategoryOfSeries(a.id(), a.categoryId());
+      }
+    }
+    categoryRepository.deleteById(id);
+    categoryRepository.flush();
+    auditService.record(
+        AuditAction.CATEGORY_DELETED,
+        userId,
+        ENTITY_TYPE,
+        id,
+        before,
+        Map.of("assignments", assignments));
+  }
+
+  private Map<UUID, Integer> itemCounts(UUID userId) {
+    Map<UUID, Integer> counts = new HashMap<>();
+    for (CategoryCount row : todoRepository.countOneOffsByCategory(userId)) {
+      counts.merge(row.getCategoryId(), (int) row.getItemCount(), Integer::sum);
+    }
+    for (CategoryCount row : seriesRepository.countByCategory(userId)) {
+      counts.merge(row.getCategoryId(), (int) row.getItemCount(), Integer::sum);
+    }
+    return counts;
+  }
+
+  private static ApiException invalid(String message) {
+    return new ApiException(ErrorCode.VALIDATION_FAILED, message);
   }
 
   /**

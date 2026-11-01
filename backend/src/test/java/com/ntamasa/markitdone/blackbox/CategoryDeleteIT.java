@@ -215,11 +215,11 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 		return objects.stream().filter(object -> id.equals(object.path("id").asString())).findFirst();
 	}
 
-	/** Asserts that Work still holds everything it held before the rejected request. */
-	private void assertNothingChanged(Seeded s) throws Exception {
+	/** Asserts that Work still holds everything it held before the rejected request, with Home at the given count. */
+	private void assertNothingChanged(Seeded s, int homeCountBeforeRequest) throws Exception {
 		assertThat(categoryNode(s.user(), s.workId())).as("Work still exists").isPresent();
 		assertThat(itemCount(s.user(), s.workId())).as("Work itemCount").isEqualTo(3);
-		assertThat(itemCount(s.user(), s.homeId())).as("Home itemCount").isZero();
+		assertThat(itemCount(s.user(), s.homeId())).as("Home itemCount").isEqualTo(homeCountBeforeRequest);
 		Map<String, JsonNode> rows = rowsById(s.user());
 		assertThat(categoryIdOf(rows.get(s.todo1()))).as("todo1 category").isEqualTo(s.workId());
 		assertThat(categoryIdOf(rows.get(s.todo2()))).as("todo2 category").isEqualTo(s.workId());
@@ -387,7 +387,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				assignment("TODO", s.todo1(), s.workId())));
 
 		assertProblem(response, 400, "VALIDATION_FAILED");
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -401,7 +401,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				assignment("TODO", s.todo1(), bobCategory)));
 
 		assertProblem(response, 400, "VALIDATION_FAILED");
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -413,7 +413,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				assignment("SERIES", s.seriesId(), UUID.randomUUID().toString())));
 
 		assertProblem(response, 400, "VALIDATION_FAILED");
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -421,12 +421,14 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 	void assignmentOfTodoOutsideCategoryIsRejected() throws Exception {
 		Seeded s = seed();
 		String homeTodo = createTodo(s.user(), "Water plants", nextMonday().plusDays(6), s.homeId());
+		int homeCountBeforeRequest = itemCount(s.user(), s.homeId());
+		assertThat(homeCountBeforeRequest).as("Home itemCount after setup (the Home todo)").isEqualTo(1);
 
 		HttpResponse<String> response = deleteCategory(s.user(), s.workId(), List.of(
 				assignment("TODO", homeTodo, s.homeId())));
 
 		assertProblem(response, 400, "VALIDATION_FAILED");
-		assertNothingChanged(s);
+		assertNothingChanged(s, homeCountBeforeRequest);
 		assertThat(categoryIdOf(rowsById(s.user()).get(homeTodo))).as("Home todo unchanged").isEqualTo(s.homeId());
 	}
 
@@ -441,7 +443,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				assignment("TODO", bobTodo, s.homeId())));
 
 		assertProblem(response, 400, "VALIDATION_FAILED");
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	// ---------------------------------------------------------------- ownership and not found
@@ -459,7 +461,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				.isEqualTo(404);
 		assertThat(deleteResponse.statusCode()).as("delete by another user, body: " + deleteResponse.body())
 				.isEqualTo(404);
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -475,7 +477,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				.isEqualTo(404);
 		assertThat(deleteResponse.statusCode()).as("delete of random id, body: " + deleteResponse.body())
 				.isEqualTo(404);
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -514,7 +516,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				deleteBody(List.of(assignment("TODO", s.todo1(), s.homeId()))));
 
 		assertThat(response.statusCode()).as("delete status without session").isEqualTo(401);
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 
 	@Test
@@ -527,6 +529,6 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 				s.user().access(), s.user().refresh());
 
 		assertThat(response.statusCode()).as("delete status without CSRF token").isEqualTo(403);
-		assertNothingChanged(s);
+		assertNothingChanged(s, 0);
 	}
 }

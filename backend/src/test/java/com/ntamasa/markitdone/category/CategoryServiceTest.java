@@ -12,6 +12,8 @@ import com.ntamasa.markitdone.audit.AuditAction;
 import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.recurrence.RecurrenceSeriesRepository;
+import com.ntamasa.markitdone.todo.TodoRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 class CategoryServiceTest {
 
   @Mock private CategoryRepository categoryRepository;
+  @Mock private TodoRepository todoRepository;
+  @Mock private RecurrenceSeriesRepository seriesRepository;
   @Mock private AuditService auditService;
 
   @InjectMocks private CategoryService categoryService;

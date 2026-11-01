@@ -63,4 +63,27 @@ public class CategoryController {
   public CategoryDto update(@PathVariable UUID id, @Valid @RequestBody CategoryRequest req) {
     return categoryService.update(CurrentUser.id(), id, req);
   }
+
+  /**
+   * Lists the one-off todos and recurring series in a category of the current user.
+   *
+   * @param id the category id
+   * @return the usage
+   */
+  @GetMapping("/{id}/usage")
+  public CategoryUsageDto usage(@PathVariable UUID id) {
+    return categoryService.usage(CurrentUser.id(), id);
+  }
+
+  /**
+   * Deletes a category of the current user after moving its items as requested.
+   *
+   * @param id the category id
+   * @param req where the items go
+   */
+  @PostMapping("/{id}/delete")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable UUID id, @Valid @RequestBody DeleteCategoryRequest req) {
+    categoryService.delete(CurrentUser.id(), id, req);
+  }
 }
