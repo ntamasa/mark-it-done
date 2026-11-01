@@ -131,6 +131,29 @@ public class RecurrenceSeries {
   }
 
   /**
+   * Builds an active series from a template and a rule. The series is not saved.
+   *
+   * @param userId the owner
+   * @param name the template name
+   * @param description the template description, or null
+   * @param dueTime the template time, or null for all-day
+   * @param priority the template priority
+   * @param categoryId the template category id, or null
+   * @param rule the recurrence rule
+   * @return the new series
+   */
+  public static RecurrenceSeries fromTemplate(
+      UUID userId,
+      String name,
+      String description,
+      LocalTime dueTime,
+      Priority priority,
+      UUID categoryId,
+      RecurrenceRule rule) {
+    return new RecurrenceSeries(userId, name, description, dueTime, priority, categoryId, rule);
+  }
+
+  /**
    * Replaces the rule of the series.
    *
    * @param rule the new rule
