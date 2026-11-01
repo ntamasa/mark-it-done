@@ -5,17 +5,23 @@ import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.category.CategoryService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
+import com.ntamasa.markitdone.recurrence.RecurrenceSeries;
+import com.ntamasa.markitdone.recurrence.RecurrenceSeriesRepository;
 import com.ntamasa.markitdone.todo.dto.TodoDto;
 import com.ntamasa.markitdone.todo.dto.TodoRequest;
 import com.ntamasa.markitdone.user.UserRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +38,7 @@ public class TodoService {
   private final CategoryService categoryService;
   private final UserRepository userRepository;
   private final AuditService auditService;
+  private final RecurrenceSeriesRepository seriesRepository;
 
   /**
    * Create a TodoService.
@@ -40,16 +47,19 @@ public class TodoService {
    * @param categoryService the category service, used to check category ownership
    * @param userRepository the user repository, used to find the user's time zone
    * @param auditService the audit service
+   * @param seriesRepository the series repository, used to fill the series fields
    */
   public TodoService(
       TodoRepository todoRepository,
       CategoryService categoryService,
       UserRepository userRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      RecurrenceSeriesRepository seriesRepository) {
     this.todoRepository = todoRepository;
     this.categoryService = categoryService;
     this.userRepository = userRepository;
     this.auditService = auditService;
+    this.seriesRepository = seriesRepository;
   }
 
   /**
@@ -71,10 +81,12 @@ public class TodoService {
       throw new ApiException(ErrorCode.BAD_REQUEST, "Invalid date range");
     }
     ZoneId zone = zoneOf(userId);
-    return todoRepository.findByUserIdAndDueDateBetween(userId, from, to).stream()
-        .sorted(Comparator.comparing(Todo::getDueDate).thenComparing(TodoOrdering.DAY))
-        .map(todo -> TodoMapper.toDto(todo, zone))
-        .toList();
+    List<Todo> todos =
+        todoRepository.findByUserIdAndDueDateBetween(userId, from, to).stream()
+            .sorted(Comparator.comparing(Todo::getDueDate).thenComparing(TodoOrdering.DAY))
+            .toList();
+    Map<UUID, RecurrenceSeries> series = seriesOf(todos);
+    return todos.stream().map(todo -> TodoMapper.toDto(todo, zone, series)).toList();
   }
 
   /**
@@ -87,7 +99,7 @@ public class TodoService {
    */
   @Transactional(readOnly = true)
   public TodoDto get(UUID userId, UUID id) {
-    return TodoMapper.toDto(requireOwned(userId, id), zoneOf(userId));
+    return toDto(requireOwned(userId, id), zoneOf(userId));
   }
 
   /**
@@ -116,7 +128,7 @@ public class TodoService {
                 req.categoryId()));
     auditService.record(
         AuditAction.TODO_CREATED, userId, ENTITY_TYPE, todo.getId(), null, snapshot(todo));
-    return TodoMapper.toDto(todo, zoneOf(userId));
+    return toDto(todo, zoneOf(userId));
   }
 
   /**
@@ -139,7 +151,7 @@ public class TodoService {
     todo.update(name, description, req.dueDate(), req.dueTime(), req.priority(), req.categoryId());
     todo = todoRepository.saveAndFlush(todo);
     auditService.record(AuditAction.TODO_UPDATED, userId, ENTITY_TYPE, id, before, snapshot(todo));
-    return TodoMapper.toDto(todo, zoneOf(userId));
+    return toDto(todo, zoneOf(userId));
   }
 
   /**
@@ -164,7 +176,7 @@ public class TodoService {
         id,
         Map.of("done", old),
         Map.of("done", done));
-    return TodoMapper.toDto(todo, zoneOf(userId));
+    return toDto(todo, zoneOf(userId));
   }
 
   /**
@@ -196,6 +208,21 @@ public class TodoService {
     return todoRepository
         .findByIdAndUserId(id, userId)
         .orElseThrow(() -> ApiException.notFound("Todo"));
+  }
+
+  private TodoDto toDto(Todo todo, ZoneId zone) {
+    return TodoMapper.toDto(todo, zone, seriesOf(List.of(todo)));
+  }
+
+  /** Loads all series referenced by the todos in one query. */
+  private Map<UUID, RecurrenceSeries> seriesOf(Collection<Todo> todos) {
+    List<UUID> ids =
+        todos.stream().map(Todo::getSeriesId).filter(Objects::nonNull).distinct().toList();
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+    return seriesRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(RecurrenceSeries::getId, Function.identity()));
   }
 
   private ZoneId zoneOf(UUID userId) {
