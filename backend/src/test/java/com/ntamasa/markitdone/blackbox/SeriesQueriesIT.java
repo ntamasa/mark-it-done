@@ -4,6 +4,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -304,7 +305,7 @@ class SeriesQueriesIT extends AbstractIntegrationTest {
 	void anotherUsersListIsEmptyOfTheseSeries() throws Exception {
 		Session other = support.registerUser();
 
-		for (String query : List.of(null, "status=ENDED", "status=CANCELLED", "status=ALL", "q=gy")) {
+		for (String query : Arrays.asList(null, "status=ENDED", "status=CANCELLED", "status=ALL", "q=gy")) {
 			assertThat(list(other, query).size()).as("list of another user for " + query).isZero();
 		}
 	}

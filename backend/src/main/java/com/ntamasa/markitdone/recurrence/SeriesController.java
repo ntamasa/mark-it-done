@@ -5,6 +5,7 @@ import com.ntamasa.markitdone.recurrence.dto.FutureCountDto;
 import com.ntamasa.markitdone.recurrence.dto.SeriesDto;
 import com.ntamasa.markitdone.recurrence.dto.SeriesRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,14 +23,41 @@ import org.springframework.web.bind.annotation.RestController;
 public class SeriesController {
 
   private final SeriesService seriesService;
+  private final SeriesQueries seriesQueries;
 
   /**
    * Create a SeriesController.
    *
    * @param seriesService the series service
+   * @param seriesQueries the read side of the series
    */
-  public SeriesController(SeriesService seriesService) {
+  public SeriesController(SeriesService seriesService, SeriesQueries seriesQueries) {
     this.seriesService = seriesService;
+    this.seriesQueries = seriesQueries;
+  }
+
+  /**
+   * Lists the series of the current user.
+   *
+   * @param status ACTIVE (default), ENDED, CANCELLED or ALL
+   * @param q a case-insensitive part of the name
+   * @return the matching series, sorted by next occurrence and then by name
+   */
+  @GetMapping
+  public List<SeriesDto> list(
+      @RequestParam(required = false) String status, @RequestParam(required = false) String q) {
+    return seriesQueries.list(CurrentUser.id(), status, q);
+  }
+
+  /**
+   * Returns one series of the current user.
+   *
+   * @param id the series id
+   * @return the series
+   */
+  @GetMapping("/{id}")
+  public SeriesDto get(@PathVariable UUID id) {
+    return seriesQueries.get(CurrentUser.id(), id);
   }
 
   /**
