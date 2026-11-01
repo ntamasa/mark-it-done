@@ -1,5 +1,6 @@
 package com.ntamasa.markitdone.todo;
 
+import com.ntamasa.markitdone.category.CategoryCount;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -118,4 +119,52 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
           + " order by t.dueDate asc, t.id asc")
   List<NextDueRow> findNextRows(
       @Param("seriesIds") Collection<UUID> seriesIds, @Param("from") LocalDate from);
+
+  /**
+   * Counts a user's one-off todos (those without a series) per category.
+   *
+   * @param userId the owner
+   * @return one row per category that has at least one one-off todo
+   */
+  @Query(
+      "select t.categoryId as categoryId, count(t) as itemCount from Todo t"
+          + " where t.userId = :userId and t.categoryId is not null and t.seriesId is null"
+          + " group by t.categoryId")
+  List<CategoryCount> countOneOffsByCategory(@Param("userId") UUID userId);
+
+  /**
+   * Lists a user's one-off todos in a category, earliest due date first.
+   *
+   * @param userId the owner
+   * @param categoryId the category
+   * @return the todos
+   */
+  @Query(
+      "select t from Todo t where t.userId = :userId and t.categoryId = :categoryId"
+          + " and t.seriesId is null order by t.dueDate asc, t.name asc, t.id asc")
+  List<Todo> findOneOffsInCategory(
+      @Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
+
+  /**
+   * Sets the category of one todo.
+   *
+   * @param id the todo
+   * @param categoryId the new category, or null
+   * @return the number of updated rows
+   */
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
+  @Query("update Todo t set t.categoryId = :categoryId where t.id = :id")
+  int updateCategory(@Param("id") UUID id, @Param("categoryId") UUID categoryId);
+
+  /**
+   * Sets the category of every row of a series, past ones included.
+   *
+   * @param seriesId the series
+   * @param categoryId the new category, or null
+   * @return the number of updated rows
+   */
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
+  @Query("update Todo t set t.categoryId = :categoryId where t.seriesId = :seriesId")
+  int updateCategoryOfSeries(
+      @Param("seriesId") UUID seriesId, @Param("categoryId") UUID categoryId);
 }
