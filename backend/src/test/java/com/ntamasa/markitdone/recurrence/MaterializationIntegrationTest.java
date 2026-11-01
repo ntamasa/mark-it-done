@@ -107,7 +107,9 @@ class MaterializationIntegrationTest extends AbstractPostgresIntegrationTest {
         .isEqualTo(horizon);
     assertThat(dto.status()).isEqualTo(SeriesStatus.ACTIVE);
     assertThat(dto.ruleSummary()).isEqualTo("Weekly: Mon, Wed, Fri");
-    assertThat(dto.nextOccurrence()).isNull();
+    assertThat(dto.nextOccurrence())
+        .isEqualTo(expected.stream().filter(d -> !d.isBefore(today())).findFirst().orElseThrow());
+    assertThat(dto.nextOccurrenceTodoId()).isNotNull();
   }
 
   @Test

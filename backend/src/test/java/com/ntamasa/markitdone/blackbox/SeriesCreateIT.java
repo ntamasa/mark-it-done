@@ -279,11 +279,21 @@ class SeriesCreateIT extends AbstractIntegrationTest {
 
 		assertThat(series.path("ruleSummary").asString()).isEqualTo(WEEKLY_SUMMARY);
 		assertThat(series.path("status").asString()).isEqualTo("ACTIVE");
-		// Until MAR-87 the computed fields are not filled in yet.
-		assertThat(series.path("nextOccurrence").isNull()).as("nextOccurrence is null").isTrue();
-		assertThat(series.path("nextOccurrenceTodoId").isNull()).as("nextOccurrenceTodoId is null").isTrue();
-		assertThat(series.path("endsSummary").isNull()).as("endsSummary is null").isTrue();
-		assertThat(series.path("cancelledOn").isNull()).as("cancelledOn is null").isTrue();
+		// The computed fields: the first Mon/Wed/Fri slot on or after today, and the row that holds it.
+		LocalDate firstSlot = monWedFriBetween(today(), today().plusDays(14)).get(0);
+		assertThat(series.path("nextOccurrence").asString()).as("nextOccurrence").isEqualTo(firstSlot.toString());
+		JsonNode firstRow = null;
+		for (JsonNode row : rowsOf(session, today(), today().plusDays(MAX_RANGE_DAYS))) {
+			if (series.path("id").asString().equals(row.path("seriesId").asString())
+					&& row.path("dueDate").asString().equals(firstSlot.toString())) {
+				firstRow = row;
+			}
+		}
+		assertThat(firstRow).as("row of the first slot " + firstSlot).isNotNull();
+		assertThat(series.path("nextOccurrenceTodoId").asString())
+				.as("nextOccurrenceTodoId").isEqualTo(firstRow.path("id").asString());
+		assertThat(series.path("endsSummary").asString()).as("endsSummary").isEqualTo("Never");
+		assertThat(series.path("cancelledOn").isNull()).as("cancelledOn is null for an active series").isTrue();
 	}
 
 	// ---------------------------------------------------------------- materialisation

@@ -1,6 +1,7 @@
 package com.ntamasa.markitdone.todo;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -102,4 +103,19 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
   @Query("select min(t.dueDate) from Todo t where t.seriesId = :seriesId and t.dueDate >= :from")
   Optional<LocalDate> findNextDueDate(
       @Param("seriesId") UUID seriesId, @Param("from") LocalDate from);
+
+  /**
+   * Lists the rows of several series due on or after a date, earliest first. The first row of each
+   * series is its next occurrence.
+   *
+   * @param seriesIds the series, must not be empty
+   * @param from the first due date to consider
+   * @return the rows ordered by due date and then by id
+   */
+  @Query(
+      "select t.seriesId as seriesId, t.id as id, t.dueDate as dueDate from Todo t"
+          + " where t.seriesId in :seriesIds and t.dueDate >= :from"
+          + " order by t.dueDate asc, t.id asc")
+  List<NextDueRow> findNextRows(
+      @Param("seriesIds") Collection<UUID> seriesIds, @Param("from") LocalDate from);
 }

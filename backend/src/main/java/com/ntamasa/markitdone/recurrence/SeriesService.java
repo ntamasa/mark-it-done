@@ -37,6 +37,7 @@ public class SeriesService {
   private final AuditService auditService;
   private final TodoRepository todoRepository;
   private final Clock clock;
+  private final SeriesQueries seriesQueries;
 
   /**
    * Create a SeriesService.
@@ -48,6 +49,7 @@ public class SeriesService {
    * @param auditService the audit service
    * @param todoRepository the todo repository, used to delete and count occurrences
    * @param clock the clock that decides what "today" is
+   * @param seriesQueries the read side, used to return the full view of a series
    */
   public SeriesService(
       RecurrenceSeriesRepository seriesRepository,
@@ -56,7 +58,8 @@ public class SeriesService {
       UserRepository userRepository,
       AuditService auditService,
       TodoRepository todoRepository,
-      Clock clock) {
+      Clock clock,
+      SeriesQueries seriesQueries) {
     this.seriesRepository = seriesRepository;
     this.materializationService = materializationService;
     this.categoryService = categoryService;
@@ -64,6 +67,7 @@ public class SeriesService {
     this.auditService = auditService;
     this.todoRepository = todoRepository;
     this.clock = clock;
+    this.seriesQueries = seriesQueries;
   }
 
   /**
@@ -96,7 +100,7 @@ public class SeriesService {
     seriesRepository.flush();
     auditService.record(
         AuditAction.SERIES_CREATED, userId, ENTITY_TYPE, series.getId(), null, snapshot(series));
-    return SeriesQueries.toDto(series);
+    return seriesQueries.toDto(series);
   }
 
   /**
@@ -155,7 +159,7 @@ public class SeriesService {
         AuditAction.SERIES_CREATED, userId, ENTITY_TYPE, series.getId(), null, snapshot(series));
     auditService.record(
         AuditAction.TODO_UPDATED, userId, TODO_ENTITY_TYPE, todoId, todoBefore, todoSnapshot(todo));
-    return SeriesQueries.toDto(series);
+    return seriesQueries.toDto(series);
   }
 
   /**
@@ -173,7 +177,7 @@ public class SeriesService {
   public SeriesDto cancel(UUID userId, UUID seriesId) {
     RecurrenceSeries series = requireOwned(userId, seriesId);
     if (series.getStatus() == SeriesStatus.CANCELLED) {
-      return SeriesQueries.toDto(series);
+      return seriesQueries.toDto(series);
     }
     LocalDate today = today(userId);
     Map<String, Object> before = snapshot(series);
@@ -185,7 +189,7 @@ public class SeriesService {
     after.put("removedOccurrences", removed);
     after.put("cancelledOn", today.toString());
     auditService.record(AuditAction.SERIES_CANCELLED, userId, ENTITY_TYPE, seriesId, before, after);
-    return SeriesQueries.toDto(current);
+    return seriesQueries.toDto(current);
   }
 
   /**
