@@ -66,6 +66,28 @@ class ApiExceptionHandlerTest {
 
   @Test
   @WithMockUser
+  void testMissingRequestParameterIsBadRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/test/param"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code", is("BAD_REQUEST")))
+        .andExpect(jsonPath("$.detail", is("Missing request parameter")))
+        .andExpect(jsonPath("$.status", is(400)));
+  }
+
+  @Test
+  @WithMockUser
+  void testMalformedRequestParameterIsBadRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/test/number").param("n", "abc"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code", is("BAD_REQUEST")))
+        .andExpect(jsonPath("$.detail", is("Invalid request parameter")))
+        .andExpect(jsonPath("$.status", is(400)));
+  }
+
+  @Test
+  @WithMockUser
   void testUnexpectedException() throws Exception {
     mockMvc
         .perform(get("/api/test/unexpected-exception"))
