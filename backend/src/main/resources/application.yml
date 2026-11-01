@@ -64,3 +64,5 @@ markitdone:
     secure: "${MARKITDONE_COOKIES_SECURE:true}"
   recurrence:
     horizon-months: 3
+  jobs:
+    enabled: "${MARKITDONE_JOBS_ENABLED:true}"
