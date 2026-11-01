@@ -1,0 +1,157 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.mobile-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.intro {
+  display: none;
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-muted-foreground);
+}
+
+.new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 44px;
+  padding: 0 var(--space-md);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.label-long {
+  display: none;
+}
+
+.cat-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 12px 8px 12px 16px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  box-shadow: var(--shadow-md);
+}
+
+.cat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cat-count {
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.cat-actions {
+  display: flex;
+  flex: none;
+}
+
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-muted);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  &.destructive {
+    color: var(--color-destructive);
+  }
+
+  i {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .cat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .label-long {
+    display: inline;
+  }
+
+  .label-short {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cat-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mobile-title {
+    display: none;
+  }
+
+  .intro {
+    display: block;
+  }
+}
