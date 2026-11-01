@@ -1,0 +1,37 @@
+<div class="page-head">
+  <h1 class="mobile-title">Categories</h1>
+  <p class="intro">Categories are yours only. Deleting one lets you move its todos first.</p>
+  <button type="button" class="new-btn" aria-label="New category" (click)="openNew()">
+    <i class="pi pi-plus" aria-hidden="true"></i>
+    <span class="label-long" aria-hidden="true">New category</span>
+    <span class="label-short" aria-hidden="true">New</span>
+  </button>
+</div>
+
+<ul class="cat-list">
+  @for (c of store.categories(); track c.id) {
+    <li class="cat-card">
+      <div class="cat-info">
+        <app-category-chip [category]="c" />
+        <span class="cat-count">{{ countLabel(c.itemCount) }}</span>
+      </div>
+      <div class="cat-actions">
+        <button type="button" class="icon-action" [attr.aria-label]="'Edit category ' + c.name" (click)="edit(c)">
+          <i class="pi pi-pencil" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="icon-action destructive"
+          [attr.aria-label]="'Delete category ' + c.name"
+          (click)="store.requestDelete(c)"
+        >
+          <i class="pi pi-trash" aria-hidden="true"></i>
+        </button>
+      </div>
+    </li>
+  }
+</ul>
+
+@if (dialog(); as d) {
+  <app-category-dialog [category]="d.category" (closed)="dialog.set(null)" />
+}

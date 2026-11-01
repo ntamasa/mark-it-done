@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { CategoryStore } from '../../core/categories/category.store';
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../../core/auth/auth.models';
 import { ThemeService } from '../../core/theme/theme.service';
@@ -28,6 +29,7 @@ describe('Shell', () => {
     isDark: ReturnType<typeof signal<boolean>>;
     set: ReturnType<typeof vi.fn>;
   };
+  const load = vi.fn();
   let editor: { openNew: ReturnType<typeof vi.fn> };
 
   async function setup(matches = false) {
@@ -46,6 +48,7 @@ describe('Shell', () => {
         { provide: AuthService, useValue: auth },
         { provide: ThemeService, useValue: theme },
         { provide: TodoEditorService, useValue: editor },
+        { provide: CategoryStore, useValue: { load } },
         { provide: BreakpointObserver, useValue: { observe: () => desktop$ } },
       ],
     });
@@ -55,6 +58,12 @@ describe('Shell', () => {
     await fixture.whenStable();
     return fixture;
   }
+
+  it('loads the categories on start', async () => {
+    load.mockClear();
+    await setup();
+    expect(load).toHaveBeenCalledTimes(1);
+  });
 
   const q = (f: { nativeElement: HTMLElement }, sel: string) => f.nativeElement.querySelector<HTMLElement>(sel);
 

@@ -7,6 +7,7 @@ import { MenuModule } from 'primeng/menu';
 import { map } from 'rxjs';
 import { ThemePreference } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
+import { CategoryStore } from '../../core/categories/category.store';
 import { todayIso } from '../../core/dates/dates';
 import { ThemeService } from '../../core/theme/theme.service';
 import { PagerComponent } from '../../shared/ui/pager/pager';
@@ -57,6 +58,10 @@ export class Shell {
   private readonly theme = inject(ThemeService);
   private readonly editor = inject(TodoEditorService);
   protected readonly header = inject(ShellHeader);
+
+  constructor() {
+    inject(CategoryStore).load();
+  }
 
   protected readonly menuOpen = signal(false);
   protected readonly navItems = NAV_ITEMS;

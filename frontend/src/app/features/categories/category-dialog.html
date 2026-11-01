@@ -1,0 +1,70 @@
+<p-dialog
+  [visible]="true"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="true"
+  [showHeader]="false"
+  [header]="null!"
+  [position]="isMobile() ? 'bottom' : 'center'"
+  styleClass="md-dialog"
+  (onShow)="onShow()"
+>
+  <form class="dialog-form" novalidate (submit)="onSubmit($event)">
+    <h2 id="catedit-title" class="dialog-title">{{ title() }}</h2>
+
+    <div class="field">
+      <label for="cat-name">Name *</label>
+      <input
+        id="cat-name"
+        type="text"
+        autocomplete="off"
+        (input)="conflict.set(null)"
+        [formField]="categoryForm.name"
+        [attr.aria-invalid]="nameError() ? 'true' : null"
+        [attr.aria-describedby]="nameError() ? 'cat-name-error' : null"
+      />
+      @if (nameError(); as msg) {
+        <p class="field-error" id="cat-name-error" role="alert">{{ msg }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <span id="cat-colour" class="field-label">Colour</span>
+      <div class="swatch-grid" role="radiogroup" aria-labelledby="cat-colour">
+        @for (s of swatches; track s.key) {
+          <button
+            type="button"
+            class="swatch"
+            role="radio"
+            [class.selected]="categoryForm.swatch().value() === s.key"
+            [attr.aria-checked]="categoryForm.swatch().value() === s.key"
+            [attr.aria-label]="s.label"
+            [style.background-color]="s.background"
+            [style.color]="s.text"
+            [attr.tabindex]="categoryForm.swatch().value() === s.key ? 0 : -1"
+            (click)="pick(s.key)"
+            (keydown)="onSwatchKey($event)"
+          >
+            @if (categoryForm.swatch().value() === s.key) {
+              <i class="pi pi-check" aria-hidden="true"></i>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="preview">
+      <span>Preview</span>
+      <app-category-chip [category]="preview()" />
+    </div>
+
+    <div class="md-dialog-actions">
+      <p-button type="button" label="Cancel" [text]="true" (onClick)="closed.emit()" />
+      <p-button type="submit" styleClass="btn-accent" [label]="saving() ? 'Saving…' : 'Save'" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
