@@ -1,6 +1,7 @@
 package com.ntamasa.markitdone.todo;
 
 import com.ntamasa.markitdone.auth.CurrentUser;
+import com.ntamasa.markitdone.recurrence.SeriesEditService;
 import com.ntamasa.markitdone.todo.dto.DoneRequest;
 import com.ntamasa.markitdone.todo.dto.TodoDto;
 import com.ntamasa.markitdone.todo.dto.TodoRequest;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,14 +30,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class TodoController {
 
   private final TodoService todoService;
+  private final SeriesEditService seriesEditService;
 
   /**
    * Create a TodoController.
    *
    * @param todoService the todo service
+   * @param seriesEditService the service that edits occurrences of recurring todos
    */
-  public TodoController(TodoService todoService) {
+  public TodoController(TodoService todoService, SeriesEditService seriesEditService) {
     this.todoService = todoService;
+    this.seriesEditService = seriesEditService;
   }
 
   /**
@@ -79,12 +84,17 @@ public class TodoController {
    * Replaces the editable fields of a todo of the current user.
    *
    * @param id the todo id
-   * @param req the new todo fields
-   * @return the updated todo
+   * @param scope THIS or FUTURE; required for an occurrence of a recurring todo, ignored otherwise
+   * @param req the new todo fields and, with FUTURE, an optional new rule
+   * @return the updated todo, or 204 when a rule change leaves no occurrence on that date
    */
   @PutMapping("/{id}")
-  public TodoDto update(@PathVariable UUID id, @Valid @RequestBody TodoRequest req) {
-    return todoService.update(CurrentUser.id(), id, req);
+  public ResponseEntity<TodoDto> update(
+      @PathVariable UUID id,
+      @RequestParam(required = false) EditScope scope,
+      @Valid @RequestBody TodoRequest req) {
+    TodoDto dto = seriesEditService.update(CurrentUser.id(), id, scope, req);
+    return dto == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(dto);
   }
 
   /**
