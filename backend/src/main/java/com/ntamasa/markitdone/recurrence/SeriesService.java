@@ -5,12 +5,15 @@ import com.ntamasa.markitdone.audit.AuditService;
 import com.ntamasa.markitdone.category.CategoryService;
 import com.ntamasa.markitdone.common.ApiException;
 import com.ntamasa.markitdone.common.ErrorCode;
-import com.ntamasa.markitdone.recurrence.dto.RuleRequest;
 import com.ntamasa.markitdone.recurrence.dto.SeriesDto;
 import com.ntamasa.markitdone.recurrence.dto.SeriesRequest;
+import com.ntamasa.markitdone.todo.TodoRepository;
 import com.ntamasa.markitdone.user.UserRepository;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,8 @@ public class SeriesService {
   private final CategoryService categoryService;
   private final UserRepository userRepository;
   private final AuditService auditService;
+  private final TodoRepository todoRepository;
+  private final Clock clock;
 
   /**
    * Create a SeriesService.
@@ -38,18 +43,24 @@ public class SeriesService {
    * @param categoryService the category service, used to check category ownership
    * @param userRepository the user repository, used to find the user's time zone
    * @param auditService the audit service
+   * @param todoRepository the todo repository, used to delete and count occurrences
+   * @param clock the clock that decides what "today" is
    */
   public SeriesService(
       RecurrenceSeriesRepository seriesRepository,
       MaterializationService materializationService,
       CategoryService categoryService,
       UserRepository userRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      TodoRepository todoRepository,
+      Clock clock) {
     this.seriesRepository = seriesRepository;
     this.materializationService = materializationService;
     this.categoryService = categoryService;
     this.userRepository = userRepository;
     this.auditService = auditService;
+    this.todoRepository = todoRepository;
+    this.clock = clock;
   }
 
   /**
@@ -82,25 +93,64 @@ public class SeriesService {
     seriesRepository.flush();
     auditService.record(
         AuditAction.SERIES_CREATED, userId, ENTITY_TYPE, series.getId(), null, snapshot(series));
-    return toDto(series);
+    return SeriesQueries.toDto(series);
   }
 
-  private static SeriesDto toDto(RecurrenceSeries series) {
-    RecurrenceRule rule = series.rule();
-    return new SeriesDto(
-        series.getId(),
-        series.getName(),
-        series.getDescription(),
-        series.getDueTime(),
-        series.getPriority(),
-        series.getCategoryId(),
-        RuleRequest.of(rule),
-        RecurrenceRules.summary(rule),
-        series.getStatus(),
-        null,
-        null,
-        null,
-        series.getCancelledOn());
+  /**
+   * Cancels a series: its occurrences after today (in the owner's time zone) are deleted, today's
+   * and earlier occurrences are kept, and the series is never materialised again. Cancelling an
+   * already cancelled series changes nothing and returns it as it is. Records a SERIES_CANCELLED
+   * audit entry.
+   *
+   * @param userId the owner
+   * @param seriesId the series
+   * @return the cancelled series
+   * @throws ApiException NOT_FOUND when the series is not the user's
+   */
+  @Transactional
+  public SeriesDto cancel(UUID userId, UUID seriesId) {
+    RecurrenceSeries series = requireOwned(userId, seriesId);
+    if (series.getStatus() == SeriesStatus.CANCELLED) {
+      return SeriesQueries.toDto(series);
+    }
+    LocalDate today = today(userId);
+    Map<String, Object> before = snapshot(series);
+    int removed = todoRepository.deleteAfter(seriesId, today);
+    RecurrenceSeries current = requireOwned(userId, seriesId);
+    current.cancel(today);
+    seriesRepository.saveAndFlush(current);
+    Map<String, Object> after = new LinkedHashMap<>();
+    after.put("removedOccurrences", removed);
+    after.put("cancelledOn", today.toString());
+    auditService.record(AuditAction.SERIES_CANCELLED, userId, ENTITY_TYPE, seriesId, before, after);
+    return SeriesQueries.toDto(current);
+  }
+
+  /**
+   * Counts the occurrences of a series dated after today in the owner's time zone. The confirm
+   * dialog of a cancel shows this number.
+   *
+   * @param userId the owner
+   * @param seriesId the series
+   * @return the number of occurrences after today
+   * @throws ApiException NOT_FOUND when the series is not the user's
+   */
+  @Transactional(readOnly = true)
+  public long futureCount(UUID userId, UUID seriesId) {
+    requireOwned(userId, seriesId);
+    return todoRepository.countBySeriesIdAndOccurrenceDateAfter(seriesId, today(userId));
+  }
+
+  private RecurrenceSeries requireOwned(UUID userId, UUID seriesId) {
+    return seriesRepository
+        .findByIdAndUserId(seriesId, userId)
+        .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Series not found"));
+  }
+
+  private LocalDate today(UUID userId) {
+    ZoneId zone =
+        userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User")).zone();
+    return LocalDate.now(clock.withZone(zone));
   }
 
   private void checkCategory(UUID userId, UUID categoryId) {
