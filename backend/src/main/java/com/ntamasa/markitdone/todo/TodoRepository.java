@@ -84,6 +84,15 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
   int deleteAfter(@Param("seriesId") UUID seriesId, @Param("after") LocalDate after);
 
   /**
+   * Counts the rows of a series whose occurrence date is after a date.
+   *
+   * @param seriesId the series
+   * @param after the date after which rows are counted (exclusive)
+   * @return the number of rows
+   */
+  long countBySeriesIdAndOccurrenceDateAfter(UUID seriesId, LocalDate after);
+
+  /**
    * Finds the earliest due date of a series' rows on or after a date.
    *
    * @param seriesId the series
