@@ -18,3 +18,9 @@ databaseChangeLog:
 - include:
     file: "changes/006-todos.yaml"
     relativeToChangelogFile: true
+- include:
+    file: "changes/007-recurrence-series.yaml"
+    relativeToChangelogFile: true
+- include:
+    file: "changes/008-series-exclusions.yaml"
+    relativeToChangelogFile: true

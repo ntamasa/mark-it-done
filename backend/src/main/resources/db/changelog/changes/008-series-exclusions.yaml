@@ -1,0 +1,35 @@
+---
+databaseChangeLog:
+- changeSet:
+    id: "008-series-exclusions"
+    author: "markitdone"
+    changes:
+    - createTable:
+        tableName: "series_exclusions"
+        columns:
+        - column:
+            name: "series_id"
+            type: "uuid"
+            constraints:
+              nullable: false
+        - column:
+            name: "occurrence_date"
+            type: "date"
+            constraints:
+              nullable: false
+        - column:
+            name: "created_at"
+            type: "timestamptz"
+            constraints:
+              nullable: false
+    - addPrimaryKey:
+        tableName: "series_exclusions"
+        columnNames: "series_id, occurrence_date"
+        constraintName: "pk_series_exclusions"
+    - addForeignKeyConstraint:
+        baseTableName: "series_exclusions"
+        baseColumnNames: "series_id"
+        constraintName: "fk_series_exclusions_series"
+        referencedTableName: "recurrence_series"
+        referencedColumnNames: "id"
+        onDelete: "CASCADE"
