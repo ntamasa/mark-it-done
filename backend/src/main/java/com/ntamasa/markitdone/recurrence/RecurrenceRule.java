@@ -2,7 +2,9 @@ package com.ntamasa.markitdone.recurrence;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The immutable recurrence rule of a series.
@@ -25,4 +27,14 @@ public record RecurrenceRule(
     LocalDate startDate,
     EndType endType,
     Integer endCount,
-    LocalDate endDate) {}
+    LocalDate endDate) {
+
+  /**
+   * Normalise the day sets: null becomes empty and month days become an unmodifiable sorted set.
+   */
+  public RecurrenceRule {
+    weekdays = weekdays == null ? Set.of() : Collections.unmodifiableSet(new TreeSet<>(weekdays));
+    monthDays =
+        monthDays == null ? Set.of() : Collections.unmodifiableSet(new TreeSet<>(monthDays));
+  }
+}
